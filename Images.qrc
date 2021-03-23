@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>add Layer.png</file>
+        <file>change JobName.png</file>
+        <file>Feature Delete.png</file>
+        <file>line.png</file>
+        <file>New File.png</file>
+        <file>Open File.png</file>
+        <file>pad.png</file>
+        <file>point select.png</file>
+        <file>rectangle select.png</file>
+        <file>Rectangle.png</file>
+        <file>Redo.png</file>
+        <file>Round.png</file>
+        <file>Save File.png</file>
+        <file>Undo.png</file>
+        <file>Zoom In.png</file>
+        <file>Zoom Out.png</file>
+    </qresource>
+</RCC>
