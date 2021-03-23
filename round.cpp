@@ -1,7 +1,8 @@
 #include "round.h"
 
 CRound::CRound(const long &radius, const SHAPE_TYPE &type) :
-    CShape(type)
+    CShape(type),
+    m_radius(radius)
 {
 
 }

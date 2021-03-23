@@ -21,8 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     m_job = new CJob();
-    m_view = new CView(this);
     m_activeLayer = new CLayer();
+    m_view = new CView(this);
 
     // 중앙에 Widget(드로우 영역) 배치.
     setCentralWidget(m_view);
@@ -74,7 +74,7 @@ void MainWindow::run()
 
         if (m_commandShape.compare(_ROUND) == 0)
         {
-            qlonglong radius = m_commandVarMap.value(_CENTER_PT).toLongLong();
+            qlonglong radius = m_commandVarMap.value(_RADIUS).toLongLong();
 
             CShape *shape = new CRound(radius, _SHAPE_ROUND);
 

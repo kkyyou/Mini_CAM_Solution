@@ -18,6 +18,8 @@ public:
     QMatrix getMatrix(QRect windowArea, QRect viewArea);
     void drawLayer(CLayer *layer, QPainter *painter);
 
+    void drawPadRound(QPoint centerPoint,long radius,QPainter *painter,QColor penColor);
+
 signals:
     void updateCurMousePositionSignal(long, long);
 

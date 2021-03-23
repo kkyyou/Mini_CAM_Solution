@@ -23,9 +23,9 @@ CView::CView(QWidget *parent) :
     // 기본 색상이 검은색으로 보이도록 처리.
     QPalette pal;
     pal.setColor(QPalette::Background, Qt::black);
+
     setAutoFillBackground(true);
     setPalette(pal);
-
     setMouseTracking(true);
 
     // 마우스 이동 시 좌표 업데이트 -> 시그널 슬롯 연결.
@@ -86,9 +86,12 @@ QMatrix CView::getMatrix(QRect windowArea, QRect viewArea)
 void CView::drawLayer(CLayer *layer, QPainter *painter)
 {
     QList<CFeature *> featureList = layer->featureList();
-    for (auto iter = featureList.cbegin(); iter != featureList.cend() - 1; ++iter)
+    if (featureList.isEmpty())
+        return;
+
+    for (auto iter = featureList.cbegin(); iter != featureList.cend(); ++iter)
     {
-        CFeature *feature= *iter;
+        CFeature *feature = *iter;
         if (!feature)
             continue;
 
@@ -105,10 +108,10 @@ void CView::drawLayer(CLayer *layer, QPainter *painter)
         long         width        = shape->getWidth();
         long         height       = shape->getHeight();
 
-//        if(fType == _FEATURE_PAD && sType == _SHAPE_ROUND)
-//        {
-//            drawPadRound(center,radius, painter,Qt::red);
-//        }
+        if(fType == _FEATURE_PAD && sType == _SHAPE_ROUND)
+        {
+            drawPadRound(center, radius, painter, Qt::red);
+        }
 //        else if(fType == _FEATURE_PAD && sType == _SHAPE_RECTANGLE)
 //        {
 //            drawPadRect(center,width,height, painter,Qt::red);
@@ -124,8 +127,25 @@ void CView::drawLayer(CLayer *layer, QPainter *painter)
     }
 }
 
+void CView::drawPadRound(QPoint centerPoint, long radius, QPainter *painter, QColor penColor)
+{
+    QPen pen;
+
+    long penSize = radius * 2;
+
+    pen.setColor(penColor);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setWidth(penSize);
+    pen.setStyle(Qt::SolidLine);
+    painter->setPen(pen);
+
+    painter->drawPoint(centerPoint);
+}
+
 void CView::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
+
     // 픽스맵 사이즈 안맞을시 매칭.
     if (m_pixMap.size() != this->size())
     {
@@ -135,31 +155,40 @@ void CView::paintEvent(QPaintEvent *event)
     m_pixMap.fill(Qt::transparent);
 
     QMatrix matrix = getMatrix(rect(), m_viewArea);
-    QPainter painter;
+    QPainter painterPixmap;
 
-    painter.begin(&m_pixMap);
-    painter.setMatrix(matrix);
+    // 픽스맵에 드로우.
+    painterPixmap.begin(&m_pixMap);
+    painterPixmap.setMatrix(matrix);
 
     // 레이어 돌면서 존재하는 Feature 그리기.
     if (m_mainWindow->activeLayer())
     {
-        drawLayer(m_mainWindow->activeLayer(), &painter);
+        drawLayer(m_mainWindow->activeLayer(), &painterPixmap);
         //drawSelectResult(&m_pixMap);
     }
 
     // 현재 커맨드 스텝에 따른 Feature 그리기.
 
+    painterPixmap.end();
+
+    // View에 드로우.
+    QPainter painter;
+    painter.begin(this);
+
+    painter.drawPixmap(0, 0, m_pixMap);
+    painter.end();
 }
 
 void CView::mousePressEvent(QMouseEvent *event)
 {
     if (event->buttons() == Qt::LeftButton)
     {
-        m_mainWindow->goToNext(event->pos());
+        m_mainWindow->goToNext(m_pos);
     }
     else if (event->buttons() == Qt::RightButton)
     {
-        m_mainWindow->goToPrev(event->pos());
+        m_mainWindow->goToPrev(m_pos);
     }
 }
 
@@ -169,11 +198,9 @@ void CView::mouseMoveEvent(QMouseEvent *event)
     matrix = matrix.inverted();
     m_pos = matrix.map(event->pos());
 
-    long x, y;
-    x = m_pos.x();
-    y = m_pos.y();
+    long long x = m_pos.x();
+    long long y = m_pos.y();
 
     emit updateCurMousePositionSignal(x, y);
-
     repaint();
 }
