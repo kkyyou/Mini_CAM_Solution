@@ -8,6 +8,12 @@ CLayer::CLayer() :
 
 }
 
+CLayer::~CLayer()
+{
+    // 레이어가 Delete 되면 관리하던 Feature도 Delete.
+    qDeleteAll(m_featureList);
+}
+
 void CLayer::appendFeature(CFeature *feature)
 {
     m_featureList.append(feature);

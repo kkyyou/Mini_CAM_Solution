@@ -9,6 +9,7 @@ class CLayer
 {
 public:
     CLayer();
+    ~CLayer();
 
     void appendFeature(CFeature *feature);
 

@@ -2,6 +2,8 @@
 #include "typedefine.h"
 #include "layer.h"
 #include "feature.h"
+#include "pad.h"
+#include "line.h"
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -95,39 +97,73 @@ void CView::drawLayer(CLayer *layer, QPainter *painter)
         if (!feature)
             continue;
 
-        CShape *shape = feature->shape();
-        if (!shape)
-            continue;
-
-        FEATURE_TYPE fType        = feature->type();
-        SHAPE_TYPE   sType        = shape->type();
-        QPoint       center       = feature->getCenterPoint();
-        QPoint       start        = feature->getStartPoint();
-        QPoint       end          = feature->getEndPoint();
-        long         radius       = shape->getRadius();
-        long         width        = shape->getWidth();
-        long         height       = shape->getHeight();
-
-        if(fType == _FEATURE_PAD && sType == _SHAPE_ROUND)
+        // Feature Type별 드로우.
+        switch (feature->type())
         {
-            drawPadRound(center, radius, painter, Qt::red);
+        case _FEATURE_PAD:  drawPad(feature, painter, Qt::red);    break;
+        case _FEATURE_LINE: drawLine(feature, painter, Qt::red);   break;
+        default:                                                   break;
         }
-//        else if(fType == _FEATURE_PAD && sType == _SHAPE_RECTANGLE)
-//        {
-//            drawPadRect(center,width,height, painter,Qt::red);
-//        }
-//        else if(fType == _FEATURE_LINE && sType == _SHAPE_ROUND)
-//        {
-//            drawLineRound(start,end ,radius, painter,Qt::red);
-//        }
-//        else if(fType == _FEATURE_LINE && sType == _SHAPE_RECTANGLE)
-//        {
-//            drawLineRect(start,end ,width, painter,Qt::red);
-//        }
     }
 }
 
-void CView::drawPadRound(QPoint centerPoint, long radius, QPainter *painter, QColor penColor)
+void CView::drawPad(CFeature *feature, QPainter *painter, const QColor &penColor)
+{
+    if (!feature)   return;
+
+    CPad *pad = dynamic_cast<CPad *>(feature);
+    if (!pad)
+        return;
+
+    CShape *shape = feature->shape();
+    if (!shape)
+        return;
+
+    SHAPE_TYPE shapeType = shape->type();
+
+    QPoint center = pad->getCenterPoint();
+    if (shapeType == _SHAPE_ROUND)
+    {
+        long radius = shape->getRadius();
+        drawPadRound(center, radius, painter, penColor);
+    }
+    else if (shapeType == _SHAPE_RECT)
+    {
+        long width = shape->getWidth();
+        long height = shape->getHeight();
+        drawPadRect(center, width, height, painter, penColor);
+    }
+}
+
+void CView::drawLine(CFeature *feature, QPainter *painter, const QColor &penColor)
+{
+    if (!feature)   return;
+
+    CLine *line = dynamic_cast<CLine *>(feature);
+    if (!line)
+        return;
+
+    CShape *shape = feature->shape();
+    if (!shape)
+        return;
+
+    QPoint start = line->getStartPoint();
+    QPoint end = line->getEndPoint();
+
+    SHAPE_TYPE shapeType = shape->type();
+    if (shapeType == _SHAPE_ROUND)
+    {
+        long radius = shape->getRadius();
+        drawLineRound(start, end, radius, painter, penColor);
+    }
+    else if (shapeType == _SHAPE_RECT)
+    {
+        long width = shape->getWidth();
+        drawLineRect(start, end, width, painter, penColor);
+    }
+}
+
+void CView::drawPadRound(const QPoint &centerPoint, const long &radius, QPainter *painter, const QColor &penColor)
 {
     QPen pen;
 
@@ -140,6 +176,65 @@ void CView::drawPadRound(QPoint centerPoint, long radius, QPainter *painter, QCo
     painter->setPen(pen);
 
     painter->drawPoint(centerPoint);
+}
+
+void CView::drawPadRect(const QPoint &centerPoint, const long &width, const long &height, QPainter *painter, const QColor &penColor)
+{
+    QPen pen;
+
+    pen.setCapStyle(Qt::SquareCap);
+    pen.setStyle(Qt::SolidLine);
+    painter->setBrush(penColor);
+    painter->setPen(pen);
+
+    long leftTopX = centerPoint.x() - (width / 2);
+    long leftTopY = centerPoint.y() - (height / 2);
+
+    painter->drawRect(leftTopX, leftTopY, width, height);
+}
+
+void CView::drawLineRect(const QPoint &startPoint, const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor)
+{
+    QPen pen;
+
+    pen.setColor(penColor);
+    pen.setCapStyle(Qt::SquareCap);
+    pen.setWidth(penWidth);
+    pen.setStyle(Qt::SolidLine);
+    painter->setPen(pen);
+
+    painter->drawLine(startPoint, endPoint);
+}
+
+void CView::drawLineRound(const QPoint &startPoint, const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor)
+{
+    QPen pen;
+
+    pen.setColor(penColor);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setWidth(penWidth);
+    pen.setStyle(Qt::SolidLine);
+    painter->setPen(pen);
+
+    painter->drawLine(startPoint, endPoint);
+}
+
+void CView::drawLinePreview(const QMap<QString, QVariant> &commandValueMap, QPainter *painter, const QColor &penColor)
+{
+    QPoint start = commandValueMap.value(_START_PT).toPoint();
+    QString shapeStr = m_mainWindow->commandShape();
+
+    // 라인의 스타트 점을 찍었을때 현재 마우스 위치로 프리뷰를 보여준다.
+    if (shapeStr.compare(_ROUND) == 0)
+    {
+        long radius = commandValueMap.value(_RADIUS).toLongLong();
+        drawLineRound(start, m_pos, radius, painter, penColor);
+    }
+    else if (shapeStr.compare(_RECTANGLE) == 0)
+    {
+        long width = commandValueMap.value(_WIDTH).toLongLong();
+        drawLineRect(start, m_pos, width, painter, penColor);
+    }
 }
 
 void CView::paintEvent(QPaintEvent *event)
@@ -169,6 +264,13 @@ void CView::paintEvent(QPaintEvent *event)
     }
 
     // 현재 커맨드 스텝에 따른 Feature 그리기.
+    int curCommandStep = m_mainWindow->commandStep();
+    QString curCommand = m_mainWindow->command();
+    if (curCommand.compare(_ADD_LINE) == 0 && curCommandStep == _STEP_1)
+    {
+        QMap<QString, QVariant> commandValueMap = m_mainWindow->commandVarMap();
+        drawLinePreview(commandValueMap, &painterPixmap, Qt::red);
+    }
 
     painterPixmap.end();
 

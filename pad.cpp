@@ -1,7 +1,7 @@
 #include "pad.h"
 
-CPad::CPad(const FEATURE_TYPE &featureType, const QPoint &center) :
-    CFeature(featureType),
+CPad::CPad(const QPoint &center) :
+    CFeature(_FEATURE_PAD),
     m_center(center)
 {
 

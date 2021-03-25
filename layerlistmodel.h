@@ -25,6 +25,9 @@ public:
     QList<CLayer *> layerList() const;
     void setLayerList(const QList<CLayer *> &layerList);
 
+signals:
+    void changeActiveLayer(CLayer *activeLayer);
+
 public slots:
     void repaint();
 

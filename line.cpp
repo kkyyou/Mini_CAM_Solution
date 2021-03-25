@@ -1,7 +1,7 @@
 #include "line.h"
 
-CLine::CLine(const FEATURE_TYPE &featureType, const QPoint &start, const QPoint &end) :
-    CFeature(featureType),
+CLine::CLine(const QPoint &start, const QPoint &end) :
+    CFeature(_FEATURE_LINE),
     m_start(start),
     m_end(end)
 {

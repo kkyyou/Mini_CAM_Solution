@@ -6,6 +6,12 @@ CJob::CJob()
 
 }
 
+CJob::~CJob()
+{
+    // Job이 Delete되면 관리하던 Layer도 Delete.
+    qDeleteAll(m_layerList);
+}
+
 QList<CLayer *> CJob::layerList() const
 {
     return m_layerList;

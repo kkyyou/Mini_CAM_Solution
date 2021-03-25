@@ -23,6 +23,12 @@ signals:
 private slots:
     void on_setting_btn_clicked();
 
+    void on_round_radio_btn_clicked();
+
+    void on_rect_radio_btn_clicked();
+
+    void on_close_btn_clicked();
+
 private:
     Ui::CAddPadDialog *ui;
 };

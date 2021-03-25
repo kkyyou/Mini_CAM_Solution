@@ -15,17 +15,19 @@
 #include "addlayerdialog.h"
 #include "radiobuttondelegate.h"
 #include "checkboxdelegate.h"
+#include "line.h"
+#include "addlinedialog.h"
 
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow),
+      m_activeLayer(NULL)
 {
     ui->setupUi(this);
 
     m_job = new CJob();
-    m_activeLayer = new CLayer();
     m_view = new CView(this);
 
     // 중앙에 Widget(드로우 영역) 배치.
@@ -44,14 +46,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     CCheckBoxDelegate *viewLayerCheckBoxDelegate = new CCheckBoxDelegate(this);
     ui->layer_list_view->setItemDelegateForColumn(CLayerListModel::_COLUMN_VIEW, viewLayerCheckBoxDelegate);
+
+    // Connect.
+    QObject::connect(layerListModel, SIGNAL(changeActiveLayer(CLayer *)), this, SLOT(setActiveLayer(CLayer *)));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-
 
 void MainWindow::goToNext(const QPoint &point)
 {
@@ -70,7 +73,22 @@ void MainWindow::goToNext(const QPoint &point)
     }
     else if (m_command.compare(_ADD_LINE) == 0)
     {
-
+        switch (m_commandStep)
+        {
+        case 0:
+        {
+            m_commandVarMap.insert(_START_PT, point);
+            m_commandStep++;
+            updateCurrentStepUI();
+        } break;
+        case 1:
+        {
+            m_commandVarMap.insert(_END_PT, point);
+            initCommandStep();
+            updateCurrentStepUI();
+            run();
+        } break;
+        }
     }
 }
 
@@ -84,23 +102,66 @@ void MainWindow::run()
     if (!m_activeLayer)
         return;
 
+    // 커맨드에 따른 실행.
     if (m_command.compare(_ADD_PAD) == 0)
     {
         QPoint pos = m_commandVarMap.value(_CENTER_PT).toPoint();
 
-        CFeature *feature = new CPad(_FEATURE_PAD, pos);
+        CFeature *feature = new CPad(pos);
 
         if (m_commandShape.compare(_ROUND) == 0)
         {
             qlonglong radius = m_commandVarMap.value(_RADIUS).toLongLong();
-
-            CShape *shape = new CRound(radius, _SHAPE_ROUND);
+            CShape *shape = new CRound(radius);
 
             feature->setShape(shape);
             m_activeLayer->appendFeature(feature);
         }
+        else if (m_commandShape.compare(_RECTANGLE) == 0)
+        {
+            qlonglong width = m_commandVarMap.value(_WIDTH).toLongLong();
+            qlonglong height = m_commandVarMap.value(_HEIGHT).toLongLong();
+            CShape *shape = new CRectangle(width, height);
 
+            feature->setShape(shape);
+            m_activeLayer->appendFeature(feature);
+        }
     }
+    else if (m_command.compare(_ADD_LINE) == 0)
+    {
+        QPoint start = m_commandVarMap.value(_START_PT).toPoint();
+        QPoint end = m_commandVarMap.value(_END_PT).toPoint();
+
+        CFeature *feature = new CLine(start, end);
+
+        if (m_commandShape.compare(_ROUND) == 0)
+        {
+            qlonglong radius = m_commandVarMap.value(_RADIUS).toLongLong();
+            CShape *shape = new CRound(radius);
+
+            feature->setShape(shape);
+            m_activeLayer->appendFeature(feature);
+        }
+        else if (m_commandShape.compare(_RECTANGLE) == 0)
+        {
+            qlonglong width = m_commandVarMap.value(_WIDTH).toLongLong();
+            qlonglong height = m_commandVarMap.value(_HEIGHT).toLongLong();
+            CShape *shape = new CRectangle(width, height);
+
+            feature->setShape(shape);
+            m_activeLayer->appendFeature(feature);
+        }
+    }
+}
+
+void MainWindow::initCommandStep()
+{
+    m_commandStep = 0;
+}
+
+void MainWindow::updateCurrentStepUI()
+{
+    ui->currentStep->setText("Step : " + QString::number(m_commandStep));
 }
 
 void MainWindow::updateCurMousePositionSlot(long x, long y)
@@ -125,6 +186,8 @@ void MainWindow::updateCurCommandSlot(QString command, QString commandShape)
 {
     m_command = command;
     m_commandShape = commandShape;
+
+    ui->currentCommand->setText("Command : " + command + " (" + commandShape + ")");
 }
 
 void MainWindow::addLayerSlot(QString layerName)
@@ -140,6 +203,14 @@ void MainWindow::addLayerSlot(QString layerName)
 
     // 레이어 리스트 모델의 기존 리스트 가져와서 새로운 레이어 추가 후 다시 셋팅.
     QList<CLayer *> layerList = layerListModel->layerList();
+    if (layerList.isEmpty())
+    {
+        // 처음 생성하는 레이어면 Active , View.
+        newLayer->setIsActive(true);
+        newLayer->setIsView(true);
+        m_activeLayer = newLayer;
+    }
+
     layerList.append(newLayer);
     layerListModel->setLayerList(layerList);
 }
@@ -149,7 +220,7 @@ void MainWindow::on_actionAdd_Pad_triggered()
 {
     if (!m_activeLayer)
     {
-        QMessageBox::warning(this, tr("Empty Layer"),"레이어가 없습니다", QMessageBox::Yes);
+        QMessageBox::warning(this, tr("Empty Active Layer"), "Select Active Layer.", QMessageBox::Yes);
         return;
     }
 
@@ -179,4 +250,61 @@ void MainWindow::on_actionAdd_Layer_triggered()
 
     // Add Layer 시그널/슬롯 연결.
     QObject::connect(addLayerDlg, SIGNAL(addLayerSignal(QString)), this, SLOT(addLayerSlot(QString)));
+}
+
+void MainWindow::on_actionAdd_Line_triggered()
+{
+    if (!m_activeLayer)
+    {
+        QMessageBox::warning(this, tr("Empty Active Layer"), "Select Active Layer.", QMessageBox::Yes);
+        return;
+    }
+
+    CAddLineDialog *addLineDlg = new CAddLineDialog(this);
+    addLineDlg->setWindowTitle("Add Line");
+    addLineDlg->show();
+
+    // Connect.
+    QObject::connect(addLineDlg, SIGNAL(insertCommandValueSignal(QString, QVariant)), this, SLOT(insertCommandValueMapSlot(QString, QVariant)));
+    QObject::connect(addLineDlg, SIGNAL(updateCurrentCommandSignal(QString, QString)), this, SLOT(updateCurCommandSlot(QString, QString)));
+}
+
+QString MainWindow::commandShape() const
+{
+    return m_commandShape;
+}
+
+void MainWindow::setCommandShape(const QString &commandShape)
+{
+    m_commandShape = commandShape;
+}
+
+QString MainWindow::command() const
+{
+    return m_command;
+}
+
+void MainWindow::setCommand(const QString &command)
+{
+    m_command = command;
+}
+
+QMap<QString, QVariant> MainWindow::commandVarMap() const
+{
+    return m_commandVarMap;
+}
+
+void MainWindow::setCommandVarMap(const QMap<QString, QVariant> &commandVarMap)
+{
+    m_commandVarMap = commandVarMap;
+}
+
+int MainWindow::commandStep() const
+{
+    return m_commandStep;
+}
+
+void MainWindow::setCommandStep(const int &commandStep)
+{
+    m_commandStep = commandStep;
 }

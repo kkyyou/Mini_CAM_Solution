@@ -163,10 +163,14 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
                 if (existActiveLayer)
                 {
                     m_job->unActiveAllLayer();
-                    repaint();
                 }
 
+                // Active레이어는 당연히 View도 되어야 한다.
                 layer->setIsActive(true);
+                layer->setIsView(true);
+                repaint();
+
+                emit changeActiveLayer(layer);
             }
             else
                 layer->setIsActive(false);
@@ -177,8 +181,6 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
             else                                                layer->setIsView(false);
         } break;
         }
-
-
     }
 
     return true;

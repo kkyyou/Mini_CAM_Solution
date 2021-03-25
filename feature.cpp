@@ -6,6 +6,11 @@ CFeature::CFeature(const FEATURE_TYPE &type) :
 
 }
 
+CFeature::~CFeature()
+{
+    delete m_shape;
+}
+
 FEATURE_TYPE CFeature::type() const
 {
     return m_type;

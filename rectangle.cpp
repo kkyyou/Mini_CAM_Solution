@@ -1,7 +1,7 @@
 #include "rectangle.h"
 
-CRectangle::CRectangle(const long &width, const long &height, const SHAPE_TYPE &type) :
-    CShape(type),
+CRectangle::CRectangle(const long &width, const long &height) :
+    CShape(_SHAPE_RECT),
     m_width(width),
     m_height(height)
 {

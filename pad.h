@@ -8,7 +8,7 @@
 class CPad : public CFeature
 {
 public:
-    CPad(const FEATURE_TYPE &featureType, const QPoint &center);
+    CPad(const QPoint &center);
 
     virtual QPoint getCenterPoint();
 

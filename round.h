@@ -6,7 +6,7 @@
 class CRound : public CShape
 {
 public:
-    CRound(const long &radius, const SHAPE_TYPE &type);
+    CRound(const long &radius);
 
     virtual long getRadius();
     virtual long getWidth();

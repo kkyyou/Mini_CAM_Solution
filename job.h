@@ -9,6 +9,7 @@ class CJob
 {
 public:
     CJob();
+    ~CJob();
 
     QList<CLayer *> layerList() const;
     void setLayerList(const QList<CLayer *> &layerList);

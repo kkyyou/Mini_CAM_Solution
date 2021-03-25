@@ -11,6 +11,7 @@ class CFeature
 {
 public:
     CFeature(const FEATURE_TYPE &type);
+    ~CFeature();
 
     virtual QPoint getCenterPoint() = 0;
     virtual QPoint getStartPoint() { return QPoint(); }

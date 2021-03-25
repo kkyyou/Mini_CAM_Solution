@@ -6,7 +6,7 @@
 class CRectangle : public CShape
 {
 public:
-    CRectangle(const long &width, const long &height, const SHAPE_TYPE &type);
+    CRectangle(const long &width, const long &height);
 
     virtual long getWidth();
     virtual long getHeight();

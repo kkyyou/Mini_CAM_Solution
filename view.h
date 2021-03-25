@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+class CFeature;
+class CShape;
 class CView : public QWidget
 {
     Q_OBJECT
@@ -18,7 +20,17 @@ public:
     QMatrix getMatrix(QRect windowArea, QRect viewArea);
     void drawLayer(CLayer *layer, QPainter *painter);
 
-    void drawPadRound(QPoint centerPoint,long radius,QPainter *painter,QColor penColor);
+
+    // Draw Feature.
+    void drawPad(CFeature *feature, QPainter *painter, const QColor &penColor);
+    void drawLine(CFeature *feature, QPainter *painter, const QColor &penColor);
+
+    void drawPadRound(const QPoint &centerPoint, const long &radius, QPainter *painter, const QColor &penColor);
+    void drawPadRect(const QPoint &centerPoint, const long &width, const long &height, QPainter *painter, const QColor &penColor);
+    void drawLineRect(const QPoint &startPoint , const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor);
+    void drawLineRound(const QPoint &startPoint , const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor);
+
+    void drawLinePreview(const QMap<QString, QVariant> &commandValueMap, QPainter *painter, const QColor &penColor);
 
 signals:
     void updateCurMousePositionSignal(long, long);

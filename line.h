@@ -10,7 +10,7 @@
 class CLine : public CFeature
 {
 public:
-    CLine(const FEATURE_TYPE &featureType, const QPoint &start, const QPoint &end);
+    CLine(const QPoint &start, const QPoint &end);
 
     virtual QPoint getCenterPoint();
     virtual QPoint getStartPoint();
