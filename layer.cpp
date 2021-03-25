@@ -19,3 +19,13 @@ void CLayer::setFeatureList(const QList<CFeature *> &featureList)
 {
     m_featureList = featureList;
 }
+
+QString CLayer::layerName() const
+{
+    return m_layerName;
+}
+
+void CLayer::setLayerName(const QString &layerName)
+{
+    m_layerName = layerName;
+}

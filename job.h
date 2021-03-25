@@ -10,6 +10,10 @@ class CJob
 public:
     CJob();
 
+    QList<CLayer *> layerList() const;
+    void setLayerList(const QList<CLayer *> &layerList);
+
+    void appendLayer(CLayer *layer);
 private:
     QList<CLayer *> m_layerList;
 };

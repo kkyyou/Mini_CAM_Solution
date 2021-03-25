@@ -112,7 +112,7 @@
       </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QTableView" name="tableView"/>
+      <widget class="QTableView" name="layer_list_view"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="currentStep">
@@ -134,7 +134,7 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QTableView" name="tableView_2"/>
+      <widget class="QTableView" name="feature_list_view"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="curMousePosition_label">

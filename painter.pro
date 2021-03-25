@@ -9,11 +9,13 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    addlayerdialog.cpp \
     addlinedialog.cpp \
     addpaddialog.cpp \
     feature.cpp \
     job.cpp \
     layer.cpp \
+    layerlistmodel.cpp \
     line.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -24,11 +26,13 @@ SOURCES += \
     view.cpp
 
 HEADERS += \
+    addlayerdialog.h \
     addlinedialog.h \
     addpaddialog.h \
     feature.h \
     job.h \
     layer.h \
+    layerlistmodel.h \
     line.h \
     mainwindow.h \
     pad.h \
@@ -39,6 +43,7 @@ HEADERS += \
     view.h
 
 FORMS += \
+    addlayerdialog.ui \
     addlinedialog.ui \
     addpaddialog.ui \
     mainwindow.ui

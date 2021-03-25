@@ -11,6 +11,8 @@
 #include "round.h"
 #include "rectangle.h"
 #include "layer.h"
+#include "layerlistmodel.h"
+#include "addlayerdialog.h"
 
 #include <QMessageBox>
 
@@ -26,6 +28,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 중앙에 Widget(드로우 영역) 배치.
     setCentralWidget(m_view);
+
+    // 레이어 모델 셋팅.
+    CLayerListModel *layerListModel = new CLayerListModel(this);
+    ui->layer_list_view->setModel(layerListModel);
+    ui->layer_list_view->setColumnWidth(CLayerListModel::_COLUMN_ACTIVE, 60);
+    ui->layer_list_view->setColumnWidth(CLayerListModel::_COLUMN_VIEW, 60);
+    ui->layer_list_view->horizontalHeader()->setStretchLastSection(true);
 }
 
 MainWindow::~MainWindow()
@@ -37,8 +46,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::goToNext(const QPoint &point)
 {
+    // 현재 커맨드 체크.
     if (m_command.compare(_ADD_PAD) == 0)
     {
+        // 현재 커맨드의 Step 체크.
         switch (m_commandStep)
         {
         case 0:
@@ -67,8 +78,6 @@ void MainWindow::run()
     if (m_command.compare(_ADD_PAD) == 0)
     {
         QPoint pos = m_commandVarMap.value(_CENTER_PT).toPoint();
-        qlonglong x = pos.x();
-        qlonglong y = pos.y();
 
         CFeature *feature = new CPad(_FEATURE_PAD, pos);
 
@@ -109,12 +118,29 @@ void MainWindow::updateCurCommandSlot(QString command, QString commandShape)
     m_commandShape = commandShape;
 }
 
+void MainWindow::addLayerSlot(QString layerName)
+{
+    CLayerListModel *layerListModel = qobject_cast<CLayerListModel *>(ui->layer_list_view->model());
+    if (!layerListModel)
+        return;
+
+    // 새로운 레이어 생성.
+    CLayer *newLayer = new CLayer();
+    newLayer->setLayerName(layerName);
+    m_job->appendLayer(newLayer);
+
+    // 레이어 리스트 모델의 기존 리스트 가져와서 새로운 레이어 추가 후 다시 셋팅.
+    QList<CLayer *> layerList = layerListModel->layerList();
+    layerList.append(newLayer);
+    layerListModel->setLayerList(layerList);
+}
+
 
 void MainWindow::on_actionAdd_Pad_triggered()
 {
     if (!m_activeLayer)
     {
-        QMessageBox::warning(this,tr("Add Layer plase"),"레이어가 없습니다", QMessageBox::Yes);
+        QMessageBox::warning(this, tr("Empty Layer"),"레이어가 없습니다", QMessageBox::Yes);
         return;
     }
 
@@ -135,4 +161,13 @@ CLayer *MainWindow::activeLayer() const
 void MainWindow::setActiveLayer(CLayer *activeLayer)
 {
     m_activeLayer = activeLayer;
+}
+
+void MainWindow::on_actionAdd_Layer_triggered()
+{
+    CAddLayerDialog *addLayerDlg = new CAddLayerDialog(this);
+    addLayerDlg->show();
+
+    // Add Layer 시그널/슬롯 연결.
+    QObject::connect(addLayerDlg, SIGNAL(addLayerSignal(QString)), this, SLOT(addLayerSlot(QString)));
 }

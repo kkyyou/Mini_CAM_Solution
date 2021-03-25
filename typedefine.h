@@ -15,8 +15,6 @@ enum SHAPE_TYPE
     _SHAPE_RECT
 };
 
-#define _ADD_PAD     "Add Pad"
-#define _ADD_LINE    "Add Line"
 #define _ROUND       "Round"
 #define _RECTANGLE   "Rectangle"
 #define _CENTER_PT   "CenterPt"
@@ -29,5 +27,8 @@ enum SHAPE_TYPE
 #define _STEP_1      1
 #define _STEP_2      2
 
+// Command Define.
+#define _ADD_PAD     "Add Pad"
+#define _ADD_LINE    "Add Line"
 
 #endif // TYPEDEFINE_H

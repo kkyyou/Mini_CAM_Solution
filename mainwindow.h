@@ -33,9 +33,12 @@ public slots:
     void updateCurMousePositionSlot(long, long);
     void insertCommandValueMapSlot(QString valueName, QVariant value);
     void updateCurCommandSlot(QString command, QString commandShape);
+    void addLayerSlot(QString layerName);
 
 private slots:
     void on_actionAdd_Pad_triggered();
+
+    void on_actionAdd_Layer_triggered();
 
 private:
     CJob *m_job;
