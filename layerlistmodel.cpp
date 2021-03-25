@@ -1,8 +1,11 @@
 #include "layerlistmodel.h"
 
 #include "layer.h"
+#include "job.h"
 
-CLayerListModel::CLayerListModel(QObject *parent)
+CLayerListModel::CLayerListModel(CJob *job, QObject *parent) :
+    QAbstractTableModel(parent),
+    m_job(job)
 {
 
 }
@@ -38,10 +41,32 @@ QVariant CLayerListModel::data(const QModelIndex &index, int role) const
         switch (col)
         {
         case _COLUMN_ACTIVE:    return QVariant();
-        case _COLUMN_VIEW:      return QVariant();
         case _COLUMN_NAME:      return layer->layerName();
         default:                break;
         }
+    }
+    else if (role == Qt::CheckStateRole)
+    {
+        switch (col)
+        {
+        case _COLUMN_ACTIVE:
+        {
+            bool isActive = layer->isActive();
+            if (isActive)   return Qt::Checked;
+            else            return Qt::Unchecked;
+        }
+        case _COLUMN_VIEW:
+        {
+            bool isView = layer->isView();
+            if (isView)     return Qt::Checked;
+            else            return Qt::Unchecked;
+        }
+        default:                break;
+        }
+    }
+    else if (role == Qt::TextAlignmentRole)
+    {
+       return Qt::AlignCenter;
     }
 
     return QVariant();
@@ -94,6 +119,71 @@ bool CLayerListModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
+Qt::ItemFlags CLayerListModel::flags(const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return Qt::ItemIsEnabled;
+
+    // 레이어 이름은 VIEW에서 변경 불가.
+    if (index.column() == _COLUMN_NAME)
+        return Qt::ItemIsEnabled;
+
+    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+}
+
+bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (!m_job)
+        return false;
+
+    if(!index.isValid())
+        return false;
+
+    int row = index.row();
+    int col = index.column();
+
+    if (row >= m_layerList.count())
+        return false;
+
+    CLayer *layer = m_layerList.at(row);
+    if (!layer)
+        return false;
+
+    if (role == Qt::CheckStateRole)
+    {
+        switch (col)
+        {
+        case _COLUMN_ACTIVE:
+        {
+            if ((Qt::CheckState)value.toInt() == Qt::Checked)
+            {
+                // ActiveLayer는 하나만 존재하므로.
+                // 이미 ActiveLayer가 존재하면 모두 Active를 지운 후 다시 Active 셋팅 해준다.
+                bool existActiveLayer = m_job->existActiveLayer();
+                if (existActiveLayer)
+                {
+                    m_job->unActiveAllLayer();
+                    repaint();
+                }
+
+                layer->setIsActive(true);
+            }
+            else
+                layer->setIsActive(false);
+        } break;
+        case _COLUMN_VIEW:
+        {
+            if ((Qt::CheckState)value.toInt() == Qt::Checked)   layer->setIsView(true);
+            else                                                layer->setIsView(false);
+        } break;
+        }
+
+
+    }
+
+    return true;
+}
+
 QList<CLayer *> CLayerListModel::layerList() const
 {
     return m_layerList;
@@ -112,4 +202,12 @@ void CLayerListModel::setLayerList(const QList<CLayer *> &layerList)
     if (!m_layerList.isEmpty())
         insertRows(0, m_layerList.count(), QModelIndex());
 
+}
+
+void CLayerListModel::repaint()
+{
+    QModelIndex topLeft = index(0,0);
+    QModelIndex botRight = index(rowCount() - 1, columnCount() - 1);
+
+    emit dataChanged(topLeft, botRight);
 }

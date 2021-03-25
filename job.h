@@ -14,6 +14,11 @@ public:
     void setLayerList(const QList<CLayer *> &layerList);
 
     void appendLayer(CLayer *layer);
+
+    bool existActiveLayer() const;
+    QList<CLayer *> getViewLayerList() const;
+
+    void unActiveAllLayer();
 private:
     QList<CLayer *> m_layerList;
 };

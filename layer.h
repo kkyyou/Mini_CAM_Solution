@@ -18,8 +18,16 @@ public:
     QString layerName() const;
     void setLayerName(const QString &layerName);
 
+    bool isActive() const;
+    void setIsActive(bool isActive);
+
+    bool isView() const;
+    void setIsView(bool isView);
+
 private:
     QString m_layerName;
+    bool m_isActive;
+    bool m_isView;
 
     QList<CFeature *> m_featureList;
 

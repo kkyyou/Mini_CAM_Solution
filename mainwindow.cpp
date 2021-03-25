@@ -13,6 +13,8 @@
 #include "layer.h"
 #include "layerlistmodel.h"
 #include "addlayerdialog.h"
+#include "radiobuttondelegate.h"
+#include "checkboxdelegate.h"
 
 #include <QMessageBox>
 
@@ -29,12 +31,19 @@ MainWindow::MainWindow(QWidget *parent)
     // 중앙에 Widget(드로우 영역) 배치.
     setCentralWidget(m_view);
 
-    // 레이어 모델 셋팅.
-    CLayerListModel *layerListModel = new CLayerListModel(this);
+    // Model.
+    CLayerListModel *layerListModel = new CLayerListModel(m_job, this);
     ui->layer_list_view->setModel(layerListModel);
     ui->layer_list_view->setColumnWidth(CLayerListModel::_COLUMN_ACTIVE, 60);
     ui->layer_list_view->setColumnWidth(CLayerListModel::_COLUMN_VIEW, 60);
     ui->layer_list_view->horizontalHeader()->setStretchLastSection(true);
+
+    // Delegate.
+    CCheckBoxDelegate *activeLayerCheckBoxDelegate = new CCheckBoxDelegate(this);
+    ui->layer_list_view->setItemDelegateForColumn(CLayerListModel::_COLUMN_ACTIVE, activeLayerCheckBoxDelegate);
+
+    CCheckBoxDelegate *viewLayerCheckBoxDelegate = new CCheckBoxDelegate(this);
+    ui->layer_list_view->setItemDelegateForColumn(CLayerListModel::_COLUMN_VIEW, viewLayerCheckBoxDelegate);
 }
 
 MainWindow::~MainWindow()

@@ -1,6 +1,9 @@
 #include "layer.h"
 
-CLayer::CLayer()
+CLayer::CLayer() :
+    m_layerName(""),
+    m_isActive(false),
+    m_isView(false)
 {
 
 }
@@ -28,4 +31,24 @@ QString CLayer::layerName() const
 void CLayer::setLayerName(const QString &layerName)
 {
     m_layerName = layerName;
+}
+
+bool CLayer::isActive() const
+{
+    return m_isActive;
+}
+
+void CLayer::setIsActive(bool isActive)
+{
+    m_isActive = isActive;
+}
+
+bool CLayer::isView() const
+{
+    return m_isView;
+}
+
+void CLayer::setIsView(bool isView)
+{
+    m_isView = isView;
 }
