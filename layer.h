@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QColor>
 
 class CFeature;
 class CLayer
@@ -25,12 +26,16 @@ public:
     bool isView() const;
     void setIsView(bool isView);
 
+    QColor featureColor() const;
+    void setFeatureColor(const QColor &featureColor);
+
 private:
     QString m_layerName;
     bool m_isActive;
     bool m_isView;
 
     QList<CFeature *> m_featureList;
+    QColor m_featureColor;
 
 };
 

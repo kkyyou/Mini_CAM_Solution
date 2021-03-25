@@ -35,6 +35,9 @@ public:
     QString commandShape() const;
     void setCommandShape(const QString &commandShape);
 
+    CJob *job() const;
+    void setJob(CJob *job);
+
     // Command Run.
     void goToNext(const QPoint &point);
     void goToPrev(const QPoint &point);

@@ -209,6 +209,9 @@ void MainWindow::addLayerSlot(QString layerName)
         newLayer->setIsActive(true);
         newLayer->setIsView(true);
         m_activeLayer = newLayer;
+        CLayerListModel *layerListModel = qobject_cast<CLayerListModel *>(ui->layer_list_view->model());
+        if (layerListModel)
+            layerListModel->enqueueViewLayer(newLayer);
     }
 
     layerList.append(newLayer);
@@ -267,6 +270,16 @@ void MainWindow::on_actionAdd_Line_triggered()
     // Connect.
     QObject::connect(addLineDlg, SIGNAL(insertCommandValueSignal(QString, QVariant)), this, SLOT(insertCommandValueMapSlot(QString, QVariant)));
     QObject::connect(addLineDlg, SIGNAL(updateCurrentCommandSignal(QString, QString)), this, SLOT(updateCurCommandSlot(QString, QString)));
+}
+
+CJob *MainWindow::job() const
+{
+    return m_job;
+}
+
+void MainWindow::setJob(CJob *job)
+{
+    m_job = job;
 }
 
 QString MainWindow::commandShape() const

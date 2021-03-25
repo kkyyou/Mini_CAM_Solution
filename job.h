@@ -19,7 +19,7 @@ public:
     bool existActiveLayer() const;
     QList<CLayer *> getViewLayerList() const;
 
-    void unActiveAllLayer();
+    void unActiveLayer();
 private:
     QList<CLayer *> m_layerList;
 };

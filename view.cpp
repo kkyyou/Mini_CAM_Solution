@@ -4,6 +4,7 @@
 #include "feature.h"
 #include "pad.h"
 #include "line.h"
+#include "job.h"
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -85,7 +86,7 @@ QMatrix CView::getMatrix(QRect windowArea, QRect viewArea)
     return myMatrix;
 }
 
-void CView::drawLayer(CLayer *layer, QPainter *painter)
+void CView::drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor)
 {
     QList<CFeature *> featureList = layer->featureList();
     if (featureList.isEmpty())
@@ -100,8 +101,8 @@ void CView::drawLayer(CLayer *layer, QPainter *painter)
         // Feature Type별 드로우.
         switch (feature->type())
         {
-        case _FEATURE_PAD:  drawPad(feature, painter, Qt::red);    break;
-        case _FEATURE_LINE: drawLine(feature, painter, Qt::red);   break;
+        case _FEATURE_PAD:  drawPad(feature, painter, penColor);    break;
+        case _FEATURE_LINE: drawLine(feature, painter, penColor);   break;
         default:                                                   break;
         }
     }
@@ -257,10 +258,15 @@ void CView::paintEvent(QPaintEvent *event)
     painterPixmap.setMatrix(matrix);
 
     // 레이어 돌면서 존재하는 Feature 그리기.
-    if (m_mainWindow->activeLayer())
+    CJob *job = m_mainWindow->job();
+    QList<CLayer *> viewLayerList = job->getViewLayerList();
+    for (auto iter = viewLayerList.cbegin(); iter != viewLayerList.cend(); ++iter)
     {
-        drawLayer(m_mainWindow->activeLayer(), &painterPixmap);
-        //drawSelectResult(&m_pixMap);
+        CLayer *viewLayer = *iter;
+        if (!viewLayer)
+            continue;
+
+        drawLayer(viewLayer, &painterPixmap, viewLayer->featureColor());
     }
 
     // 현재 커맨드 스텝에 따른 Feature 그리기.

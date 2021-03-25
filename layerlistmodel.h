@@ -2,6 +2,7 @@
 #define CLAYERLISTMODEL_H
 
 #include <QAbstractTableModel>
+#include <QQueue>
 
 class CLayer;
 class CJob;
@@ -25,6 +26,9 @@ public:
     QList<CLayer *> layerList() const;
     void setLayerList(const QList<CLayer *> &layerList);
 
+    void enqueueViewLayer(CLayer *layer);
+    void viewLayerRotation(CLayer *layer);
+
 signals:
     void changeActiveLayer(CLayer *activeLayer);
 
@@ -32,8 +36,9 @@ public slots:
     void repaint();
 
 private:
-    QList<CLayer *> m_layerList;
     CJob *m_job;
+    QList<CLayer *> m_layerList;
+    QQueue<CLayer *> m_viewLayerOrderQueue;
 };
 
 #endif // CLAYERLISTMODEL_H

@@ -65,7 +65,7 @@ QList<CLayer *> CJob::getViewLayerList() const
     return viewLayerList;
 }
 
-void CJob::unActiveAllLayer()
+void CJob::unActiveLayer()
 {
     for (auto iter = m_layerList.cbegin(); iter != m_layerList.cend(); ++iter)
     {

@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 
 #include <QWidget>
+#include <QQueue>
 
 class CFeature;
 class CShape;
@@ -18,8 +19,7 @@ public:
     void mouseMoveEvent(QMouseEvent *event);
 
     QMatrix getMatrix(QRect windowArea, QRect viewArea);
-    void drawLayer(CLayer *layer, QPainter *painter);
-
+    void drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor);
 
     // Draw Feature.
     void drawPad(CFeature *feature, QPainter *painter, const QColor &penColor);
@@ -38,9 +38,7 @@ signals:
 private:
     QRect m_viewArea;           // View 영역.
     MainWindow *m_mainWindow;
-
     QPixmap m_pixMap;
-
     QPoint m_pos;
 };
 

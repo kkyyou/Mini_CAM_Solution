@@ -158,16 +158,20 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
             if ((Qt::CheckState)value.toInt() == Qt::Checked)
             {
                 // ActiveLayer는 하나만 존재하므로.
-                // 이미 ActiveLayer가 존재하면 모두 Active를 지운 후 다시 Active 셋팅 해준다.
+                // 이미 ActiveLayer가 존재하면 Active를 지운 후 다시 Active 셋팅 해준다.
                 bool existActiveLayer = m_job->existActiveLayer();
                 if (existActiveLayer)
                 {
-                    m_job->unActiveAllLayer();
+                    m_job->unActiveLayer();
                 }
 
-                // Active레이어는 당연히 View도 되어야 한다.
+                // View Layer는 최대 3개로 로테이션.
+                viewLayerRotation(layer);
+
+                // Active 레이어는 당연히 View도 되어야 한다.
                 layer->setIsActive(true);
                 layer->setIsView(true);
+                layer->setFeatureColor(Qt::red);
                 repaint();
 
                 emit changeActiveLayer(layer);
@@ -177,8 +181,15 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
         } break;
         case _COLUMN_VIEW:
         {
-            if ((Qt::CheckState)value.toInt() == Qt::Checked)   layer->setIsView(true);
-            else                                                layer->setIsView(false);
+            if ((Qt::CheckState)value.toInt() == Qt::Checked)
+            {
+                // View Layer는 최대 3개로 로테이션.
+                viewLayerRotation(layer);
+                layer->setIsView(true);
+                repaint();
+            }
+            else
+                layer->setIsView(false);
         } break;
         }
     }
@@ -204,6 +215,25 @@ void CLayerListModel::setLayerList(const QList<CLayer *> &layerList)
     if (!m_layerList.isEmpty())
         insertRows(0, m_layerList.count(), QModelIndex());
 
+}
+
+void CLayerListModel::enqueueViewLayer(CLayer *layer)
+{
+    if (!layer)
+        return;
+
+    m_viewLayerOrderQueue.enqueue(layer);
+}
+
+void CLayerListModel::viewLayerRotation(CLayer *layer)
+{
+    m_viewLayerOrderQueue.enqueue(layer);
+
+    if (m_viewLayerOrderQueue.count() > 3)
+    {
+        CLayer *oldSelectLayer = m_viewLayerOrderQueue.dequeue();
+        oldSelectLayer->setIsView(false);
+    }
 }
 
 void CLayerListModel::repaint()

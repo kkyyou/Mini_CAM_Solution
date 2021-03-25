@@ -3,7 +3,8 @@
 CLayer::CLayer() :
     m_layerName(""),
     m_isActive(false),
-    m_isView(false)
+    m_isView(false),
+    m_featureColor(Qt::red)
 {
 
 }
@@ -57,4 +58,14 @@ bool CLayer::isView() const
 void CLayer::setIsView(bool isView)
 {
     m_isView = isView;
+}
+
+QColor CLayer::featureColor() const
+{
+    return m_featureColor;
+}
+
+void CLayer::setFeatureColor(const QColor &featureColor)
+{
+    m_featureColor = featureColor;
 }
