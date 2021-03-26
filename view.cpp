@@ -15,7 +15,9 @@
 
 CView::CView(QWidget *parent) :
     QWidget(parent),
-    m_viewArea(-10 * _MILLION, -10 * _MILLION, 20 * _MILLION, 20 * _MILLION) // (-10 * 백만, -10 * 백만) 좌표에서 20 * 백만 크기의 Rect 생성.
+    m_viewArea(-10 * _MILLION, -10 * _MILLION, 20 * _MILLION, 20 * _MILLION), // (-10 * 백만, -10 * 백만) 좌표에서 20 * 백만 크기의 Rect 생성.
+    m_zoomInFactor(0.8),
+    m_zoomOutFactor(1.2)
 {
     MainWindow *mainWindow = qobject_cast<MainWindow *>(parent);
     if (mainWindow)
@@ -106,6 +108,28 @@ void CView::drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor)
         default:                                                   break;
         }
     }
+}
+
+void CView::zoomIn()
+{
+    long zoomInViewLeft = m_viewArea.left() * m_zoomInFactor;
+    long zoomInViewTop = m_viewArea.top() * m_zoomInFactor;
+    long zoomInViewWidth = m_viewArea.width() * m_zoomInFactor;
+    long zoomInViewHeight = m_viewArea.height() * m_zoomInFactor;
+
+    m_viewArea.setRect(zoomInViewLeft, zoomInViewTop, zoomInViewWidth, zoomInViewHeight);
+    repaint();
+}
+
+void CView::zoomOut()
+{
+    long zoomOutViewLeft = m_viewArea.left() * m_zoomOutFactor;
+    long zoomOutViewTop = m_viewArea.top() * m_zoomOutFactor;
+    long zoomOutViewWidth = m_viewArea.width() * m_zoomOutFactor;
+    long zoomOutViewHeight = m_viewArea.height() * m_zoomOutFactor;
+
+    m_viewArea.setRect(zoomOutViewLeft, zoomOutViewTop, zoomOutViewWidth, zoomOutViewHeight);
+    repaint();
 }
 
 void CView::drawPad(CFeature *feature, QPainter *painter, const QColor &penColor)
@@ -311,4 +335,18 @@ void CView::mouseMoveEvent(QMouseEvent *event)
 
     emit updateCurMousePositionSignal(x, y);
     repaint();
+}
+
+void CView::wheelEvent(QWheelEvent *event)
+{
+    QPoint scrollAmount = event->angleDelta();
+
+    if(scrollAmount.y() >0)
+    {
+        zoomIn();
+    }
+    else
+    {
+        zoomOut();
+    }
 }

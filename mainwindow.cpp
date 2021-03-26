@@ -209,9 +209,11 @@ void MainWindow::addLayerSlot(QString layerName)
         newLayer->setIsActive(true);
         newLayer->setIsView(true);
         m_activeLayer = newLayer;
-        CLayerListModel *layerListModel = qobject_cast<CLayerListModel *>(ui->layer_list_view->model());
-        if (layerListModel)
-            layerListModel->enqueueViewLayer(newLayer);
+
+        QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+        QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
+        dequeueLC.first = newLayer;
+        layerColor->enqueue(dequeueLC);
     }
 
     layerList.append(newLayer);

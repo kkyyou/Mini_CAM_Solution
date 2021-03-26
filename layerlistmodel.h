@@ -26,9 +26,6 @@ public:
     QList<CLayer *> layerList() const;
     void setLayerList(const QList<CLayer *> &layerList);
 
-    void enqueueViewLayer(CLayer *layer);
-    void viewLayerRotation(CLayer *layer);
-
 signals:
     void changeActiveLayer(CLayer *activeLayer);
 
@@ -38,7 +35,6 @@ public slots:
 private:
     CJob *m_job;
     QList<CLayer *> m_layerList;
-    QQueue<CLayer *> m_viewLayerOrderQueue;
 };
 
 #endif // CLAYERLISTMODEL_H

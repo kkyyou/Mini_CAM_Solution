@@ -17,9 +17,14 @@ public:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
     QMatrix getMatrix(QRect windowArea, QRect viewArea);
-    void drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor);
+    void drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor);\
+
+    // Zoom.
+    void zoomIn();
+    void zoomOut();
 
     // Draw Feature.
     void drawPad(CFeature *feature, QPainter *painter, const QColor &penColor);
@@ -40,6 +45,9 @@ private:
     MainWindow *m_mainWindow;
     QPixmap m_pixMap;
     QPoint m_pos;
+
+    double m_zoomInFactor;
+    double m_zoomOutFactor;
 };
 
 #endif // CVIEW_H

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QQueue>
 
 class CLayer;
 class CJob
@@ -19,9 +20,14 @@ public:
     bool existActiveLayer() const;
     QList<CLayer *> getViewLayerList() const;
 
-    void unActiveLayer();
+    CLayer *unActiveLayer();
+
+    QQueue<QPair<CLayer *, QColor>> *getLayerAndColorQueue();
+    bool isUsingAllLayerColor() const;
+
 private:
     QList<CLayer *> m_layerList;
+    QQueue<QPair<CLayer *, QColor>> m_layerAndColor;
 };
 
 #endif // CJOB_H

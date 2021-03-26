@@ -51,15 +51,13 @@ QVariant CLayerListModel::data(const QModelIndex &index, int role) const
         {
         case _COLUMN_ACTIVE:
         {
-            bool isActive = layer->isActive();
-            if (isActive)   return Qt::Checked;
-            else            return Qt::Unchecked;
+            if (layer->isActive())   return Qt::Checked;
+            else                     return Qt::Unchecked;
         }
         case _COLUMN_VIEW:
         {
-            bool isView = layer->isView();
-            if (isView)     return Qt::Checked;
-            else            return Qt::Unchecked;
+            if (layer->isView())     return Qt::Checked;
+            else                     return Qt::Unchecked;
         }
         default:                break;
         }
@@ -162,16 +160,13 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
                 bool existActiveLayer = m_job->existActiveLayer();
                 if (existActiveLayer)
                 {
-                    m_job->unActiveLayer();
-                }
+                    CLayer *unActiveLayer = m_job->unActiveLayer();
 
-                // View Layer는 최대 3개로 로테이션.
-                viewLayerRotation(layer);
+                }
 
                 // Active 레이어는 당연히 View도 되어야 한다.
                 layer->setIsActive(true);
                 layer->setIsView(true);
-                layer->setFeatureColor(Qt::red);
                 repaint();
 
                 emit changeActiveLayer(layer);
@@ -183,13 +178,16 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
         {
             if ((Qt::CheckState)value.toInt() == Qt::Checked)
             {
-                // View Layer는 최대 3개로 로테이션.
-                viewLayerRotation(layer);
                 layer->setIsView(true);
                 repaint();
             }
             else
+            {
+                if (layer->isActive())
+                    return false;
+
                 layer->setIsView(false);
+            }
         } break;
         }
     }
@@ -215,25 +213,6 @@ void CLayerListModel::setLayerList(const QList<CLayer *> &layerList)
     if (!m_layerList.isEmpty())
         insertRows(0, m_layerList.count(), QModelIndex());
 
-}
-
-void CLayerListModel::enqueueViewLayer(CLayer *layer)
-{
-    if (!layer)
-        return;
-
-    m_viewLayerOrderQueue.enqueue(layer);
-}
-
-void CLayerListModel::viewLayerRotation(CLayer *layer)
-{
-    m_viewLayerOrderQueue.enqueue(layer);
-
-    if (m_viewLayerOrderQueue.count() > 3)
-    {
-        CLayer *oldSelectLayer = m_viewLayerOrderQueue.dequeue();
-        oldSelectLayer->setIsView(false);
-    }
 }
 
 void CLayerListModel::repaint()

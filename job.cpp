@@ -3,7 +3,10 @@
 
 CJob::CJob()
 {
-
+    CLayer *l1 = NULL, *l2 = NULL, *l3 = NULL;
+    m_layerAndColor.enqueue(qMakePair(l1, QColor(Qt::red)));
+    m_layerAndColor.enqueue(qMakePair(l2, QColor(Qt::green)));
+    m_layerAndColor.enqueue(qMakePair(l3, QColor(Qt::blue)));
 }
 
 CJob::~CJob()
@@ -65,7 +68,7 @@ QList<CLayer *> CJob::getViewLayerList() const
     return viewLayerList;
 }
 
-void CJob::unActiveLayer()
+CLayer *CJob::unActiveLayer()
 {
     for (auto iter = m_layerList.cbegin(); iter != m_layerList.cend(); ++iter)
     {
@@ -77,5 +80,26 @@ void CJob::unActiveLayer()
             continue;
 
         layer->setIsActive(false);
+        return layer;
     }
+
+    return NULL;
+}
+
+QQueue<QPair<CLayer *, QColor> > *CJob::getLayerAndColorQueue()
+{
+    return &m_layerAndColor;
+}
+
+bool CJob::isUsingAllLayerColor() const
+{
+    for (auto iter = m_layerAndColor.cbegin(); iter != m_layerAndColor.cend(); ++iter)
+    {
+        QPair<CLayer *, QColor> layerColor = *iter;
+        CLayer *layer = layerColor.first;
+        if (!layer)
+            return false;
+    }
+
+    return true;
 }
