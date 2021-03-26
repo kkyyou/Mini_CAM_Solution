@@ -16,6 +16,7 @@ public:
 
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
 
@@ -25,6 +26,9 @@ public:
     // Zoom.
     void zoomIn();
     void zoomOut();
+
+    // Panning.
+    void panning();
 
     // Draw Feature.
     void drawPad(CFeature *feature, QPainter *painter, const QColor &penColor);
@@ -45,9 +49,12 @@ private:
     MainWindow *m_mainWindow;
     QPixmap m_pixMap;
     QPoint m_pos;
+    QPoint m_lastPos;
 
     double m_zoomInFactor;
     double m_zoomOutFactor;
+
+    bool m_doPanning;
 };
 
 #endif // CVIEW_H

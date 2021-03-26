@@ -17,7 +17,8 @@ CView::CView(QWidget *parent) :
     QWidget(parent),
     m_viewArea(-10 * _MILLION, -10 * _MILLION, 20 * _MILLION, 20 * _MILLION), // (-10 * 백만, -10 * 백만) 좌표에서 20 * 백만 크기의 Rect 생성.
     m_zoomInFactor(0.8),
-    m_zoomOutFactor(1.2)
+    m_zoomOutFactor(1.2),
+    m_doPanning(false)
 {
     MainWindow *mainWindow = qobject_cast<MainWindow *>(parent);
     if (mainWindow)
@@ -37,6 +38,7 @@ CView::CView(QWidget *parent) :
     QObject::connect(this, SIGNAL(updateCurMousePositionSignal(long, long)), m_mainWindow, SLOT(updateCurMousePositionSlot(long, long)));
 }
 
+// 10에 백만 곱한 값을 윈도우픽셀값으로 변환해주는 매트릭스.
 QMatrix CView::getMatrix(QRect windowArea, QRect viewArea)
 {
     // 윈도우 영역 사이즈(픽셀)를 구한다.
@@ -47,8 +49,7 @@ QMatrix CView::getMatrix(QRect windowArea, QRect viewArea)
     double viewAreaHeight = viewArea.height();
     double viewAreaWidth = viewArea.width();
 
-    // View Area에 대한 윈도우 영역의 비율을 구한다.
-    // 우리 윈도우 영역에서 몇을 곱해줘야 View Area가 되냐.
+    // 윈도우 영역을 View 영역으로 나눈 비율.
     double scaleX = (double)windowWidth / (double)viewAreaWidth;
     double scaleY = (double)windowHeight / (double)viewAreaHeight;
 
@@ -56,8 +57,8 @@ QMatrix CView::getMatrix(QRect windowArea, QRect viewArea)
     scaleX = qAbs(scaleX);
     scaleY = qAbs(scaleY);
 
-    // Min값 이유 : Max값으로하면 View Area영역이 넘침.
-    double scale = qMin(scaleX, scaleY);
+    // Min : 윈도우의 Width / Height중 짧은 곳에 맞추겠다.
+    double scale = qMax(scaleX, scaleY);
 
     QMatrix myMatrix;
     QMatrix matrix1, matrix2, matrix3, matrix4;
@@ -65,10 +66,12 @@ QMatrix CView::getMatrix(QRect windowArea, QRect viewArea)
     qreal viewCenterX = (qreal)((qreal)viewArea.left() + (qreal)viewArea.right()) / (qreal)2;
     qreal viewCenterY = (qreal)((qreal)viewArea.top() + (qreal)viewArea.bottom()) / (qreal)2;
 
-    // 화면 중심을 (0,0)으로 이동.
+    // 화면 중심을 View Area의 Center로 이동.
     // 우리는 10에 백만 곱한 단위로 연산을 할것이므로, View Area의 중앙으로 이동해야
     // 다음 Scale 적용이 정상적으로 이루어진다.
-    matrix1.translate(viewCenterX, viewCenterY);
+    //! Qt 내부 버그?? View Area의 Left와 Right의 절대값이 같은 값이어야 하는데 미세한 오차가나서.
+    //! viewCenterX,Y값이 음수가 나오므로 - 붙임.
+    matrix1.translate(-viewCenterX, -viewCenterY);
 
     // Scale 적용.
     matrix2.scale(scale, scale);
@@ -112,24 +115,57 @@ void CView::drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor)
 
 void CView::zoomIn()
 {
-    long zoomInViewLeft = m_viewArea.left() * m_zoomInFactor;
-    long zoomInViewTop = m_viewArea.top() * m_zoomInFactor;
     long zoomInViewWidth = m_viewArea.width() * m_zoomInFactor;
     long zoomInViewHeight = m_viewArea.height() * m_zoomInFactor;
 
-    m_viewArea.setRect(zoomInViewLeft, zoomInViewTop, zoomInViewWidth, zoomInViewHeight);
+    long left   = m_viewArea.left();
+    long right  = m_viewArea.right();
+    long top    = m_viewArea.bottom();
+    long bottom = m_viewArea.top();
+
+    long centerX = ((double)((double)left/2.0) + (double)((double)right/2.0));
+    long centerY = ((double)((double)top/2.0) + (double)((double)bottom/2.0));
+
+    QPoint center(centerX, centerY);
+
+    QPoint topLeft = QPoint(m_pos.x() - zoomInViewWidth / 2, m_pos.y() - zoomInViewHeight / 2);
+    QPoint bottomRight = QPoint(m_pos.x() + zoomInViewWidth / 2, m_pos.y() + zoomInViewHeight / 2);
+    QRect viewAreaNew = QRect(topLeft, bottomRight);
+    viewAreaNew.translate((center.x() - m_pos.x()) * m_zoomInFactor, (center.y() - m_pos.y()) * m_zoomInFactor);
+    m_viewArea.setRect(viewAreaNew.left(), viewAreaNew.top(), viewAreaNew.width(), viewAreaNew.height());
     repaint();
 }
 
 void CView::zoomOut()
 {
-    long zoomOutViewLeft = m_viewArea.left() * m_zoomOutFactor;
-    long zoomOutViewTop = m_viewArea.top() * m_zoomOutFactor;
     long zoomOutViewWidth = m_viewArea.width() * m_zoomOutFactor;
     long zoomOutViewHeight = m_viewArea.height() * m_zoomOutFactor;
 
-    m_viewArea.setRect(zoomOutViewLeft, zoomOutViewTop, zoomOutViewWidth, zoomOutViewHeight);
+    long left   = m_viewArea.left();
+    long right  = m_viewArea.right();
+    long top    = m_viewArea.bottom();
+    long bottom = m_viewArea.top();
+
+    long centerX = ((double)((double)left/2.0) + (double)((double)right/2.0));
+    long centerY = ((double)((double)top/2.0) + (double)((double)bottom/2.0));
+
+    QPoint center(centerX, centerY);
+
+    QPoint topLeft = QPoint(m_pos.x() - zoomOutViewWidth / 2, m_pos.y() - zoomOutViewHeight / 2);
+    QPoint bottomRight = QPoint(m_pos.x() + zoomOutViewWidth / 2, m_pos.y() + zoomOutViewHeight / 2);
+    QRect viewAreaNew = QRect(topLeft, bottomRight);
+    viewAreaNew.translate((center.x() - m_pos.x()) * m_zoomOutFactor, (center.y() - m_pos.y()) * m_zoomOutFactor);
+    m_viewArea.setRect(viewAreaNew.left(), viewAreaNew.top(), viewAreaNew.width(), viewAreaNew.height());
     repaint();
+}
+
+void CView::panning()
+{
+    long offsetX = m_lastPos.x() - m_pos.x();
+    long offsetY = m_lastPos.y() - m_pos.y();
+
+    // 오프셋 값만큼 View Rect 이동, View 너비/높이는 동일.
+    m_viewArea.setRect(m_viewArea.left() - offsetX, m_viewArea.top() - offsetY, m_viewArea.width(), m_viewArea.height());
 }
 
 void CView::drawPad(CFeature *feature, QPainter *painter, const QColor &penColor)
@@ -314,13 +350,24 @@ void CView::paintEvent(QPaintEvent *event)
 
 void CView::mousePressEvent(QMouseEvent *event)
 {
-    if (event->buttons() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton)
     {
         m_mainWindow->goToNext(m_pos);
     }
-    else if (event->buttons() == Qt::RightButton)
+    else if (event->button() == Qt::RightButton)
     {
         m_mainWindow->goToPrev(m_pos);
+
+        m_lastPos = m_pos;
+        m_doPanning = true;
+    }
+}
+
+void CView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::RightButton)
+    {
+        m_doPanning = false;
     }
 }
 
@@ -332,6 +379,11 @@ void CView::mouseMoveEvent(QMouseEvent *event)
 
     long long x = m_pos.x();
     long long y = m_pos.y();
+
+    if (m_doPanning)
+    {
+        panning();
+    }
 
     emit updateCurMousePositionSignal(x, y);
     repaint();
