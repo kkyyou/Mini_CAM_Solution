@@ -161,23 +161,66 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
                 if (existActiveLayer)
                 {
                     CLayer *unActiveLayer = m_job->unActiveLayer();
+                    unActiveLayer->setIsActive(false);
+                }
 
+
+
+                if (!layer->isView())
+                {
+                    // 색상 지정.
+                    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+                    QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
+                    QColor dequeueC = dequeueLC.second;
+                    layer->setFeatureColor(dequeueC);
+                    dequeueLC.first = layer;
+
+                    layerColor->enqueue(dequeueLC);
                 }
 
                 // Active 레이어는 당연히 View도 되어야 한다.
                 layer->setIsActive(true);
                 layer->setIsView(true);
-                repaint();
 
+                repaint();
                 emit changeActiveLayer(layer);
             }
             else
+            {
                 layer->setIsActive(false);
+            }
         } break;
         case _COLUMN_VIEW:
         {
             if ((Qt::CheckState)value.toInt() == Qt::Checked)
             {
+                // 모든 레이어 색상이 사용중인 경우.
+                if (m_job->isUsingAllLayerColor())
+                {
+                    // 색상 지정.
+                    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+                    QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
+                    CLayer *dequeueL = dequeueLC.first;
+                    if (dequeueL)
+                        dequeueL->setIsView(false);
+                    QColor dequeueC = dequeueLC.second;
+                    layer->setFeatureColor(dequeueC);
+                    dequeueLC.first = layer;
+                    layerColor->enqueue(dequeueLC);
+                }
+                else
+                {
+                    // 색상 지정.
+                    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+                    QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
+                    CLayer *dequeueL = dequeueLC.first;
+                    QColor dequeueC = dequeueLC.second;
+                    layer->setFeatureColor(dequeueC);
+                    dequeueLC.first = layer;
+
+                    layerColor->enqueue(dequeueLC);
+                }
+
                 layer->setIsView(true);
                 repaint();
             }

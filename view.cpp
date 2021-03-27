@@ -165,7 +165,9 @@ void CView::panning()
     long offsetY = m_lastPos.y() - m_pos.y();
 
     // 오프셋 값만큼 View Rect 이동, View 너비/높이는 동일.
-    m_viewArea.setRect(m_viewArea.left() - offsetX, m_viewArea.top() - offsetY, m_viewArea.width(), m_viewArea.height());
+    //! getMatrix 함수에서 veiwCenter의 -를 붙여서 translate했기때문에 offset 값이 음/양 반대로 나오므로.
+    //! 논리적으론 offset을 - 해줘야 맞지만 + 해줌 -> getMatrix 함수 추후 확인이 필요함.. 어렵다.
+    m_viewArea.setRect(m_viewArea.left() + offsetX, m_viewArea.top() + offsetY, m_viewArea.width(), m_viewArea.height());
 }
 
 void CView::drawPad(CFeature *feature, QPainter *painter, const QColor &penColor)
@@ -393,7 +395,7 @@ void CView::wheelEvent(QWheelEvent *event)
 {
     QPoint scrollAmount = event->angleDelta();
 
-    if(scrollAmount.y() >0)
+    if (scrollAmount.y() > 0)
     {
         zoomIn();
     }
