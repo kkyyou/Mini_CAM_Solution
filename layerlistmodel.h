@@ -26,6 +26,8 @@ public:
     QList<CLayer *> layerList() const;
     void setLayerList(const QList<CLayer *> &layerList);
 
+    void setChangedLayerColor(CLayer *curLayer);
+
 signals:
     void changeActiveLayer(CLayer *activeLayer);
 

@@ -155,8 +155,7 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
         {
             if ((Qt::CheckState)value.toInt() == Qt::Checked)
             {
-                // ActiveLayer는 하나만 존재하므로.
-                // 이미 ActiveLayer가 존재하면 Active를 지운 후 다시 Active 셋팅 해준다.
+                // ActiveLayer는 하나만 존재.
                 bool existActiveLayer = m_job->existActiveLayer();
                 if (existActiveLayer)
                 {
@@ -164,21 +163,10 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
                     unActiveLayer->setIsActive(false);
                 }
 
-
-
+                // 이미 View 체크가 되어있는 경우.
                 if (!layer->isView())
-                {
-                    // 색상 지정.
-                    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
-                    QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
-                    QColor dequeueC = dequeueLC.second;
-                    layer->setFeatureColor(dequeueC);
-                    dequeueLC.first = layer;
+                    setChangedLayerColor(layer);
 
-                    layerColor->enqueue(dequeueLC);
-                }
-
-                // Active 레이어는 당연히 View도 되어야 한다.
                 layer->setIsActive(true);
                 layer->setIsView(true);
 
@@ -194,33 +182,7 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
         {
             if ((Qt::CheckState)value.toInt() == Qt::Checked)
             {
-                // 모든 레이어 색상이 사용중인 경우.
-                if (m_job->isUsingAllLayerColor())
-                {
-                    // 색상 지정.
-                    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
-                    QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
-                    CLayer *dequeueL = dequeueLC.first;
-                    if (dequeueL)
-                        dequeueL->setIsView(false);
-                    QColor dequeueC = dequeueLC.second;
-                    layer->setFeatureColor(dequeueC);
-                    dequeueLC.first = layer;
-                    layerColor->enqueue(dequeueLC);
-                }
-                else
-                {
-                    // 색상 지정.
-                    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
-                    QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
-                    CLayer *dequeueL = dequeueLC.first;
-                    QColor dequeueC = dequeueLC.second;
-                    layer->setFeatureColor(dequeueC);
-                    dequeueLC.first = layer;
-
-                    layerColor->enqueue(dequeueLC);
-                }
-
+                setChangedLayerColor(layer);
                 layer->setIsView(true);
                 repaint();
             }
@@ -228,6 +190,23 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
             {
                 if (layer->isActive())
                     return false;
+
+                // 사용중인 색상의 Layer를 NULL로 변경.
+                int queueIndex = -1;
+                QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+                for (auto iter = layerColor->cbegin(); iter != layerColor->cend(); ++iter)
+                {
+                    queueIndex++;
+
+                    QPair<CLayer *, QColor> layerColorPair = *iter;
+                    CLayer *curL = layerColorPair.first;
+                    if (curL != layer)
+                        continue;
+
+                    layerColorPair.first = NULL;
+                    layerColor->replace(queueIndex, layerColorPair);
+                    break;
+                }
 
                 layer->setIsView(false);
             }
@@ -255,6 +234,51 @@ void CLayerListModel::setLayerList(const QList<CLayer *> &layerList)
     // 새로운 Layer List 카운트 만큼 로우 추가.
     if (!m_layerList.isEmpty())
         insertRows(0, m_layerList.count(), QModelIndex());
+
+}
+
+void CLayerListModel::setChangedLayerColor(CLayer *curLayer)
+{
+    if (!curLayer)
+        return;
+
+    // 모든 레이어 색상이 사용중인 경우.
+    if (m_job->isUsingAllLayerColor())
+    {
+        QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+        QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
+
+        CLayer *dequeueL = dequeueLC.first;
+        if (dequeueL)
+            dequeueL->setIsView(false);
+
+
+        // 색상 지정.
+        QColor dequeueC = dequeueLC.second;
+        curLayer->setFeatureColor(dequeueC);
+        dequeueLC.first = curLayer;
+
+        layerColor->enqueue(dequeueLC);
+    }
+    else
+    {
+        int index = -1;
+        QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+        for (auto iter = layerColor->cbegin(); iter != layerColor->cend(); ++iter)
+        {
+            index++;
+            QPair<CLayer *, QColor> layerColorPair = *iter;
+            CLayer *curL = layerColorPair.first;
+            if (curL)
+                continue;
+
+            layerColorPair.first = curLayer;
+
+            curLayer->setFeatureColor(layerColorPair.second);
+            layerColor->replace(index, layerColorPair);
+            break;
+        }
+    }
 
 }
 
