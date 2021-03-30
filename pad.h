@@ -11,6 +11,8 @@ public:
     CPad(const QPoint &center);
 
     virtual QPoint getCenterPoint();
+    virtual QString getPointInfo();
+    virtual QString getSizeInfo();
 
 private:
     QPoint m_center;

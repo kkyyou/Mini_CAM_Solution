@@ -17,3 +17,16 @@ long CRectangle::getHeight()
 {
     return m_height;
 }
+
+QString CRectangle::getSizeInfo()
+{
+    QString width = QString::number(m_width / _MILLION);
+    QString height = QString::number(m_height / _MILLION);
+    return QString("Width = " + width) + " " + QString("Height = " + height);
+}
+
+QString CRectangle::getSizeInfoOnlyWidth()
+{
+    QString width = QString::number(m_width / _MILLION);
+    return QString("Width = " + width);
+}

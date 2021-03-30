@@ -11,6 +11,7 @@ public:
     virtual long getRadius();
     virtual long getWidth();
     virtual long getHeight();
+    virtual QString getSizeInfo();
 
 private:
     long m_radius;

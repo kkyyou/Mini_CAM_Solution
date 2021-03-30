@@ -31,4 +31,6 @@ enum SHAPE_TYPE
 #define _ADD_PAD     "Add Pad"
 #define _ADD_LINE    "Add Line"
 
+#define _NO_COMMAND  "No Command"
+
 #endif // TYPEDEFINE_H

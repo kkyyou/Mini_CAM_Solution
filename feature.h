@@ -11,17 +11,21 @@ class CFeature
 {
 public:
     CFeature(const FEATURE_TYPE &type);
-    ~CFeature();
+    virtual ~CFeature();
 
     virtual QPoint getCenterPoint() = 0;
     virtual QPoint getStartPoint() { return QPoint(); }
     virtual QPoint getEndPoint()   { return QPoint(); }
+    virtual QString getPointInfo() = 0;
+    virtual QString getSizeInfo() = 0;
 
     FEATURE_TYPE type() const;
     void setType(const FEATURE_TYPE &type);
+    QString getFeatureTypeString() const;
 
     CShape *shape() const;
     void setShape(CShape *shape);
+    QString getShapeTypeString() const;
 
 
 private:

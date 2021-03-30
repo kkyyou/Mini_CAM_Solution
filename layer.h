@@ -6,8 +6,9 @@
 #include <QColor>
 
 class CFeature;
-class CLayer
+class CLayer : public QObject
 {
+    Q_OBJECT
 public:
     CLayer();
     ~CLayer();
@@ -28,6 +29,11 @@ public:
 
     QColor featureColor() const;
     void setFeatureColor(const QColor &featureColor);
+
+    void initFeatureColor();
+
+signals:
+    void updatedFeatureListSignal(CLayer *layer);
 
 private:
     QString m_layerName;

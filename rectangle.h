@@ -10,6 +10,8 @@ public:
 
     virtual long getWidth();
     virtual long getHeight();
+    virtual QString getSizeInfo();
+    virtual QString getSizeInfoOnlyWidth();
 
 private:
     long m_width;

@@ -6,6 +6,11 @@ CShape::CShape(const SHAPE_TYPE &type) :
 
 }
 
+CShape::~CShape()
+{
+
+}
+
 SHAPE_TYPE CShape::type() const
 {
     return m_type;

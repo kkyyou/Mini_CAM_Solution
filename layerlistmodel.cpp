@@ -62,10 +62,16 @@ QVariant CLayerListModel::data(const QModelIndex &index, int role) const
         default:                break;
         }
     }
-    else if (role == Qt::TextAlignmentRole)
+    else if (role == Qt::BackgroundColorRole)
     {
-       return Qt::AlignCenter;
+        switch (col)
+        {
+        case _COLUMN_COLOR:     return layer->featureColor();
+        default:                break;
+        }
     }
+    else if (role == Qt::TextAlignmentRole)     return Qt::AlignCenter;
+
 
     return QVariant();
 }
@@ -163,7 +169,7 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
                     unActiveLayer->setIsActive(false);
                 }
 
-                // 이미 View 체크가 되어있는 경우.
+                // View 체크 안되어있는 경우.
                 if (!layer->isView())
                     setChangedLayerColor(layer);
 
@@ -192,21 +198,7 @@ bool CLayerListModel::setData(const QModelIndex &index, const QVariant &value, i
                     return false;
 
                 // 사용중인 색상의 Layer를 NULL로 변경.
-                int queueIndex = -1;
-                QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
-                for (auto iter = layerColor->cbegin(); iter != layerColor->cend(); ++iter)
-                {
-                    queueIndex++;
-
-                    QPair<CLayer *, QColor> layerColorPair = *iter;
-                    CLayer *curL = layerColorPair.first;
-                    if (curL != layer)
-                        continue;
-
-                    layerColorPair.first = NULL;
-                    layerColor->replace(queueIndex, layerColorPair);
-                    break;
-                }
+                changeLayerInLayerColorQueue(layer, NULL);
 
                 layer->setIsView(false);
             }
@@ -232,9 +224,10 @@ void CLayerListModel::setLayerList(const QList<CLayer *> &layerList)
     m_layerList = layerList;
 
     // 새로운 Layer List 카운트 만큼 로우 추가.
-    if (!m_layerList.isEmpty())
-        insertRows(0, m_layerList.count(), QModelIndex());
+    if (m_layerList.isEmpty())
+        return;
 
+    insertRows(0, m_layerList.count(), QModelIndex());
 }
 
 void CLayerListModel::setChangedLayerColor(CLayer *curLayer)
@@ -262,24 +255,30 @@ void CLayerListModel::setChangedLayerColor(CLayer *curLayer)
     }
     else
     {
-        int index = -1;
-        QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
-        for (auto iter = layerColor->cbegin(); iter != layerColor->cend(); ++iter)
-        {
-            index++;
-            QPair<CLayer *, QColor> layerColorPair = *iter;
-            CLayer *curL = layerColorPair.first;
-            if (curL)
-                continue;
-
-            layerColorPair.first = curLayer;
-
-            curLayer->setFeatureColor(layerColorPair.second);
-            layerColor->replace(index, layerColorPair);
-            break;
-        }
+        changeLayerInLayerColorQueue(NULL, curLayer);
     }
 
+}
+
+void CLayerListModel::changeLayerInLayerColorQueue(CLayer *findLayer, CLayer *valueLayer)
+{
+    int index = -1;
+    QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
+    for (auto iter = layerColor->cbegin(); iter != layerColor->cend(); ++iter)
+    {
+        index++;
+
+        QPair<CLayer *, QColor> layerColorPair = *iter;
+        CLayer *curL = layerColorPair.first;
+        if (curL != findLayer)
+            continue;
+
+        layerColorPair.first = valueLayer;
+        layerColor->replace(index, layerColorPair);
+        if (valueLayer)
+            valueLayer->setFeatureColor(layerColorPair.second);
+        break;
+    }
 }
 
 void CLayerListModel::repaint()

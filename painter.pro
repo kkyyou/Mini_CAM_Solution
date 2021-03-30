@@ -14,6 +14,7 @@ SOURCES += \
     addpaddialog.cpp \
     checkboxdelegate.cpp \
     feature.cpp \
+    featurelistmodel.cpp \
     job.cpp \
     layer.cpp \
     layerlistmodel.cpp \
@@ -32,6 +33,7 @@ HEADERS += \
     addpaddialog.h \
     checkboxdelegate.h \
     feature.h \
+    featurelistmodel.h \
     job.h \
     layer.h \
     layerlistmodel.h \

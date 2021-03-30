@@ -12,7 +12,7 @@ class CLayerListModel : public QAbstractTableModel
 public:
     CLayerListModel(CJob *job, QObject *parent = 0);
 
-    enum {_COLUMN_ACTIVE, _COLUMN_VIEW, _COLUMN_NAME, _COLUMN_COUNT};
+    enum {_COLUMN_ACTIVE, _COLUMN_VIEW, _COLUMN_NAME, _COLUMN_COLOR, _COLUMN_COUNT};
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -27,6 +27,7 @@ public:
     void setLayerList(const QList<CLayer *> &layerList);
 
     void setChangedLayerColor(CLayer *curLayer);
+    void changeLayerInLayerColorQueue(CLayer *findLayer, CLayer *valueLayer);
 
 signals:
     void changeActiveLayer(CLayer *activeLayer);

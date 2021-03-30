@@ -17,6 +17,7 @@
 #include "checkboxdelegate.h"
 #include "line.h"
 #include "addlinedialog.h"
+#include "featurelistmodel.h"
 
 #include <QMessageBox>
 
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 중앙에 Widget(드로우 영역) 배치.
     setCentralWidget(m_view);
 
-    // Model.
+    // Layer Model.
     CLayerListModel *layerListModel = new CLayerListModel(m_job, this);
     ui->layer_list_view->setModel(layerListModel);
     ui->layer_list_view->setColumnWidth(CLayerListModel::_COLUMN_ACTIVE, 60);
@@ -47,8 +48,14 @@ MainWindow::MainWindow(QWidget *parent)
     CCheckBoxDelegate *viewLayerCheckBoxDelegate = new CCheckBoxDelegate(this);
     ui->layer_list_view->setItemDelegateForColumn(CLayerListModel::_COLUMN_VIEW, viewLayerCheckBoxDelegate);
 
+    // Feature Model.
+    CFeatureListModel *featureListModel = new CFeatureListModel(this);
+    ui->feature_list_view->setModel(featureListModel);
+    ui->feature_list_view->horizontalHeader()->setStretchLastSection(true);
+
     // Connect.
     QObject::connect(layerListModel, SIGNAL(changeActiveLayer(CLayer *)), this, SLOT(setActiveLayer(CLayer *)));
+    QObject::connect(this, SIGNAL(changedActiveLayerSignal(CLayer *)), featureListModel, SLOT(setActiveLayerSlot(CLayer *)));
 }
 
 MainWindow::~MainWindow()
@@ -94,7 +101,17 @@ void MainWindow::goToNext(const QPoint &point)
 
 void MainWindow::goToPrev(const QPoint &point)
 {
-
+    if(m_commandStep == _STEP_1)
+    {
+        m_commandStep = _STEP_0;
+        m_commandStep = _STEP_0;
+    }
+    else if(m_commandStep == _STEP_0)
+    {
+        m_command = _NO_COMMAND;
+        m_commandShape = " ";
+        ui->currentCommand->setText(m_command + m_commandShape);
+    }
 }
 
 void MainWindow::run()
@@ -208,16 +225,22 @@ void MainWindow::addLayerSlot(QString layerName)
         // 처음 생성하는 레이어면 Active , View.
         newLayer->setIsActive(true);
         newLayer->setIsView(true);
+        newLayer->setFeatureColor(Qt::red);
         m_activeLayer = newLayer;
 
         QQueue<QPair<CLayer *, QColor>> *layerColor = m_job->getLayerAndColorQueue();
         QPair<CLayer *, QColor> dequeueLC = layerColor->dequeue();
         dequeueLC.first = newLayer;
         layerColor->enqueue(dequeueLC);
+
+        emit changedActiveLayerSignal(newLayer);
     }
 
     layerList.append(newLayer);
     layerListModel->setLayerList(layerList);
+
+    // Connect.
+    QObject::connect(newLayer, SIGNAL(updatedFeatureListSignal(CLayer *)), this, SIGNAL(changedActiveLayerSignal(CLayer *)));
 }
 
 
@@ -246,6 +269,7 @@ CLayer *MainWindow::activeLayer() const
 void MainWindow::setActiveLayer(CLayer *activeLayer)
 {
     m_activeLayer = activeLayer;
+    emit changedActiveLayerSignal(activeLayer);
 }
 
 void MainWindow::on_actionAdd_Layer_triggered()
@@ -322,4 +346,9 @@ int MainWindow::commandStep() const
 void MainWindow::setCommandStep(const int &commandStep)
 {
     m_commandStep = commandStep;
+}
+
+void MainWindow::on_actionSave_File_triggered()
+{
+
 }

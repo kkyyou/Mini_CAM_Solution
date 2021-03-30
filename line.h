@@ -15,6 +15,8 @@ public:
     virtual QPoint getCenterPoint();
     virtual QPoint getStartPoint();
     virtual QPoint getEndPoint();
+    virtual QString getPointInfo();
+    virtual QString getSizeInfo();
 
 private:
     QPoint m_start;

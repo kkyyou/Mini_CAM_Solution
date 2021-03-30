@@ -4,7 +4,7 @@ CLayer::CLayer() :
     m_layerName(""),
     m_isActive(false),
     m_isView(false),
-    m_featureColor(Qt::red)
+    m_featureColor(Qt::white)
 {
 
 }
@@ -18,6 +18,7 @@ CLayer::~CLayer()
 void CLayer::appendFeature(CFeature *feature)
 {
     m_featureList.append(feature);
+    emit updatedFeatureListSignal(this);
 }
 
 QList<CFeature *> CLayer::featureList() const
@@ -58,6 +59,7 @@ bool CLayer::isView() const
 void CLayer::setIsView(bool isView)
 {
     m_isView = isView;
+    initFeatureColor();
 }
 
 QColor CLayer::featureColor() const
@@ -68,4 +70,12 @@ QColor CLayer::featureColor() const
 void CLayer::setFeatureColor(const QColor &featureColor)
 {
     m_featureColor = featureColor;
+}
+
+void CLayer::initFeatureColor()
+{
+    if (this->isView())
+        return;
+
+    this->setFeatureColor(Qt::white);
 }

@@ -21,3 +21,9 @@ long CRound::getHeight()
 {
     return m_radius * 2;
 }
+
+QString CRound::getSizeInfo()
+{
+    QString radius = QString::number(m_radius / _MILLION);
+    return QString("Radius = " + radius);
+}

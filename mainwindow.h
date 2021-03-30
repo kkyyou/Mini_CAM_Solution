@@ -45,6 +45,9 @@ public:
     void initCommandStep();
     void updateCurrentStepUI();
 
+signals:
+    void changedActiveLayerSignal(CLayer *activeLayer);
+
 public slots:
     void updateCurMousePositionSlot(long, long);
     void insertCommandValueMapSlot(QString valueName, QVariant value);
@@ -58,6 +61,8 @@ private slots:
     void on_actionAdd_Layer_triggered();
 
     void on_actionAdd_Line_triggered();
+
+    void on_actionSave_File_triggered();
 
 private:
     CJob   *m_job;
