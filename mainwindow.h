@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QVariant>
+#include <QXmlStreamWriter>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -44,6 +45,10 @@ public:
     void run();
     void initCommandStep();
     void updateCurrentStepUI();
+
+    // Save.
+    void saveFile();
+    void saveLayerToXML(QXmlStreamWriter *xmlWriter, CLayer *layer);
 
 signals:
     void changedActiveLayerSignal(CLayer *activeLayer);

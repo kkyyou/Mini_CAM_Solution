@@ -33,4 +33,20 @@ enum SHAPE_TYPE
 
 #define _NO_COMMAND  "No Command"
 
+// XML ELEMENT.
+#define _LAYERS         "LAYERS"
+#define _LAYER          "LAYER"
+#define _LAYER_NAME     "NAME"
+#define _FEATURE        "FEATURE"
+#define _PAD            "PAD"
+#define _LINE           "LINE"
+#define _FEATURE_TYPE   "FEATURE_TYPE"
+#define _SHAPE_TYPE     "SHAPE_TYPE"
+#define _CENTER_X       "CENTER_X"
+#define _CENTER_Y       "CENTER_Y"
+#define _START_X        "START_X"
+#define _START_Y        "START_Y"
+#define _END_X          "END_X"
+#define _END_Y          "END_Y"
+
 #endif // TYPEDEFINE_H

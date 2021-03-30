@@ -24,6 +24,7 @@ SOURCES += \
     pad.cpp \
     rectangle.cpp \
     round.cpp \
+    savexmlfile.cpp \
     shape.cpp \
     view.cpp
 
@@ -42,6 +43,7 @@ HEADERS += \
     pad.h \
     rectangle.h \
     round.h \
+    savexmlfile.h \
     shape.h \
     typedefine.h \
     view.h

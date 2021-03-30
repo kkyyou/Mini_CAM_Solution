@@ -18,8 +18,10 @@
 #include "line.h"
 #include "addlinedialog.h"
 #include "featurelistmodel.h"
+#include "savexmlfile.h"
 
 #include <QMessageBox>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -179,6 +181,22 @@ void MainWindow::initCommandStep()
 void MainWindow::updateCurrentStepUI()
 {
     ui->currentStep->setText("Step : " + QString::number(m_commandStep));
+}
+
+void MainWindow::saveFile()
+{
+    if (!m_job)
+        return;
+
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save"), QDir::currentPath(), tr("Documents (*.xml)") );
+    QXmlStreamWriter xmlWriter;
+    QFile file(filename + ".xml");
+
+    if (!file.open(QIODevice::WriteOnly))
+        return;
+
+    // Write.
+    CSaveXMLFile::saveJob(&xmlWriter, &file, m_job);
 }
 
 void MainWindow::updateCurMousePositionSlot(long x, long y)
@@ -350,5 +368,5 @@ void MainWindow::setCommandStep(const int &commandStep)
 
 void MainWindow::on_actionSave_File_triggered()
 {
-
+    saveFile();
 }
