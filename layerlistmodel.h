@@ -34,6 +34,7 @@ signals:
 
 public slots:
     void repaint();
+    void setJob(CJob *job);
 
 private:
     CJob *m_job;

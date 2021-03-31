@@ -17,6 +17,7 @@ public:
     virtual QPoint getEndPoint();
     virtual QString getPointInfo();
     virtual QString getSizeInfo();
+    virtual void calcArea();
 
 private:
     QPoint m_start;

@@ -46,3 +46,13 @@ QString CFeature::getShapeTypeString() const
 
     return QString("");
 }
+
+QPainterPath CFeature::getAreaPath() const
+{
+    return m_areaPath;
+}
+
+void CFeature::setAreaPath(const QPainterPath &areaPath)
+{
+    m_areaPath = areaPath;
+}

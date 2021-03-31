@@ -24,10 +24,12 @@ public:
     QString getShapeTypeString(const SHAPE_TYPE &shapeType) const;
 
     void setFeatureList(const QList<CFeature *> &featureList);
+    void setActiveLayer(CLayer *layer);
 
 public slots:
     void repaint();
     void setActiveLayerSlot(CLayer *activeLayer);
+
 private:
     CLayer *m_activeLayer;
     QList<CFeature *> m_featureList;

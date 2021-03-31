@@ -2,6 +2,7 @@
 #define CFEATURE_H
 
 #include <QObject>
+#include <QPainterPath>
 
 #include "typedefine.h"
 #include "shape.h"
@@ -18,6 +19,7 @@ public:
     virtual QPoint getEndPoint()   { return QPoint(); }
     virtual QString getPointInfo() = 0;
     virtual QString getSizeInfo() = 0;
+    virtual void calcArea() = 0;
 
     FEATURE_TYPE type() const;
     void setType(const FEATURE_TYPE &type);
@@ -27,6 +29,11 @@ public:
     void setShape(CShape *shape);
     QString getShapeTypeString() const;
 
+    QPainterPath getAreaPath() const;
+    void setAreaPath(const QPainterPath &areaPath);
+
+protected:
+    QPainterPath m_areaPath;
 
 private:
     FEATURE_TYPE m_type;

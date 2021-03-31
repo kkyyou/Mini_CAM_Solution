@@ -21,7 +21,10 @@ public:
     void wheelEvent(QWheelEvent *event);
 
     QMatrix getMatrix(QRect windowArea, QRect viewArea);
-    void drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor);\
+    void drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor);
+
+    MainWindow *getMainWindow() const;
+    void setMainWindow(MainWindow *mainWindow);
 
     // Zoom.
     void zoomIn();

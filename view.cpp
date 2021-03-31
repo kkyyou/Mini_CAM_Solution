@@ -224,6 +224,13 @@ void CView::drawLine(CFeature *feature, QPainter *painter, const QColor &penColo
         long width = shape->getWidth();
         drawLineRect(start, end, width, painter, penColor);
     }
+
+    QPen pen;
+    pen.setColor(Qt::white);
+    pen.setWidth(0);
+    pen.setStyle(Qt::SolidLine);
+    painter->setPen(pen);
+    painter->drawPath(feature->getAreaPath());
 }
 
 void CView::drawPadRound(const QPoint &centerPoint, const long &radius, QPainter *painter, const QColor &penColor)
@@ -300,6 +307,16 @@ void CView::drawLinePreview(const QMap<QString, QVariant> &commandValueMap, QPai
     }
 }
 
+MainWindow *CView::getMainWindow() const
+{
+    return m_mainWindow;
+}
+
+void CView::setMainWindow(MainWindow *mainWindow)
+{
+    m_mainWindow = mainWindow;
+}
+
 void CView::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -338,6 +355,23 @@ void CView::paintEvent(QPaintEvent *event)
     {
         QMap<QString, QVariant> commandValueMap = m_mainWindow->commandVarMap();
         drawLinePreview(commandValueMap, &painterPixmap, Qt::red);
+    }
+
+    // Select.
+    QList<CFeature *> selectFeatures = m_mainWindow->getSelectedFeatures();
+    for (auto iterSelect = selectFeatures.cbegin(); iterSelect != selectFeatures.cend(); ++iterSelect)
+    {
+        CFeature *feature = *iterSelect;
+        if (!feature)
+            continue;
+
+        // Feature Type별 드로우.
+        switch (feature->type())
+        {
+        case _FEATURE_PAD:  drawPad(feature, &painterPixmap, Qt::white);   break;
+        case _FEATURE_LINE: drawLine(feature, &painterPixmap, Qt::white);  break;
+        default:                                                           break;
+        }
     }
 
     painterPixmap.end();

@@ -15,6 +15,7 @@ enum SHAPE_TYPE
     _SHAPE_RECT
 };
 
+#define _PI          3.14159265358979
 #define _ROUND       "Round"
 #define _RECTANGLE   "Rectangle"
 #define _CENTER_PT   "CenterPt"
@@ -30,6 +31,7 @@ enum SHAPE_TYPE
 // Command Define.
 #define _ADD_PAD     "Add Pad"
 #define _ADD_LINE    "Add Line"
+#define _SELECT_PT   "Select Point"
 
 #define _NO_COMMAND  "No Command"
 

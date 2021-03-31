@@ -6,7 +6,7 @@
 #include <QQueue>
 
 class CLayer;
-class CJob
+class CJob : public QObject
 {
 public:
     CJob();

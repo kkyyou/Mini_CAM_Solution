@@ -288,3 +288,10 @@ void CLayerListModel::repaint()
 
     emit dataChanged(topLeft, botRight);
 }
+
+void CLayerListModel::setJob(CJob *job)
+{
+    m_job = job;
+
+    setLayerList(job->layerList());
+}

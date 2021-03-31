@@ -121,6 +121,11 @@ void CFeatureListModel::setFeatureList(const QList<CFeature *> &featureList)
     insertRows(0, m_featureList.count(), QModelIndex());
 }
 
+void CFeatureListModel::setActiveLayer(CLayer *layer)
+{
+    m_activeLayer = layer;
+}
+
 void CFeatureListModel::repaint()
 {
     QModelIndex topLeft = index(0,0);

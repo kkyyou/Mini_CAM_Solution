@@ -13,6 +13,7 @@ public:
     virtual QPoint getCenterPoint();
     virtual QString getPointInfo();
     virtual QString getSizeInfo();
+    virtual void calcArea();
 
 private:
     QPoint m_center;

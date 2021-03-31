@@ -13,6 +13,9 @@ QT_END_NAMESPACE
 class CJob;
 class CView;
 class CLayer;
+class CLayerListModel;
+class CFeatureListModel;
+class CFeature;
 
 class MainWindow : public QMainWindow
 {
@@ -39,6 +42,12 @@ public:
     CJob *job() const;
     void setJob(CJob *job);
 
+    QList<CFeature *> getSelectedFeatures() const;
+    void setSelectedFeatures(const QList<CFeature *> &selectedFeatures);
+
+    CLayerListModel *getLayerListModel();
+    CFeatureListModel *getFeatureListModel();
+
     // Command Run.
     void goToNext(const QPoint &point);
     void goToPrev(const QPoint &point);
@@ -52,6 +61,7 @@ public:
 
 signals:
     void changedActiveLayerSignal(CLayer *activeLayer);
+    void changedJob(CJob *job);
 
 public slots:
     void updateCurMousePositionSlot(long, long);
@@ -59,6 +69,9 @@ public slots:
     void updateCurCommandSlot(QString command, QString commandShape);
     void addLayerSlot(QString layerName);
     void setActiveLayer(CLayer *activeLayer);
+
+private:
+    void resetJob();
 
 private slots:
     void on_actionAdd_Pad_triggered();
@@ -69,6 +82,10 @@ private slots:
 
     void on_actionSave_File_triggered();
 
+    void on_actionOpen_File_triggered();
+
+    void on_actionPoint_Select_triggered();
+
 private:
     CJob   *m_job;
     CView  *m_view;
@@ -78,6 +95,8 @@ private:
     QString m_command;                        // 현재 커맨드 이름(Add Pad, Add Line).
     QString m_commandShape;                   // 현재 커맨드의 모양(Round, Rect).
     QMap<QString, QVariant> m_commandVarMap;  // 각 커맨드에서 필요한 파라미터들을 저장하는 맵.
+
+    QList<CFeature *> m_selectedFeatures;
 private:
     Ui::MainWindow *ui;
 };

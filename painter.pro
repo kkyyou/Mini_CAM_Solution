@@ -21,6 +21,7 @@ SOURCES += \
     line.cpp \
     main.cpp \
     mainwindow.cpp \
+    openxmlfile.cpp \
     pad.cpp \
     rectangle.cpp \
     round.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
     layerlistmodel.h \
     line.h \
     mainwindow.h \
+    openxmlfile.h \
     pad.h \
     rectangle.h \
     round.h \

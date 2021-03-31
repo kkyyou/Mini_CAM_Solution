@@ -19,6 +19,7 @@
 #include "addlinedialog.h"
 #include "featurelistmodel.h"
 #include "savexmlfile.h"
+#include "openxmlfile.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -26,7 +27,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),
-      m_activeLayer(NULL)
+      m_activeLayer(NULL),
+      m_commandStep(0)
 {
     ui->setupUi(this);
 
@@ -43,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->layer_list_view->setColumnWidth(CLayerListModel::_COLUMN_VIEW, 60);
     ui->layer_list_view->horizontalHeader()->setStretchLastSection(true);
 
-    // Delegate.
+    // Layer Model Delegate.
     CCheckBoxDelegate *activeLayerCheckBoxDelegate = new CCheckBoxDelegate(this);
     ui->layer_list_view->setItemDelegateForColumn(CLayerListModel::_COLUMN_ACTIVE, activeLayerCheckBoxDelegate);
 
@@ -53,11 +55,13 @@ MainWindow::MainWindow(QWidget *parent)
     // Feature Model.
     CFeatureListModel *featureListModel = new CFeatureListModel(this);
     ui->feature_list_view->setModel(featureListModel);
+    ui->feature_list_view->resizeColumnsToContents();
     ui->feature_list_view->horizontalHeader()->setStretchLastSection(true);
 
     // Connect.
     QObject::connect(layerListModel, SIGNAL(changeActiveLayer(CLayer *)), this, SLOT(setActiveLayer(CLayer *)));
     QObject::connect(this, SIGNAL(changedActiveLayerSignal(CLayer *)), featureListModel, SLOT(setActiveLayerSlot(CLayer *)));
+    QObject::connect(this, SIGNAL(changedJob(CJob *)), layerListModel, SLOT(setJob(CJob *)));
 }
 
 MainWindow::~MainWindow()
@@ -99,10 +103,17 @@ void MainWindow::goToNext(const QPoint &point)
         } break;
         }
     }
+    else if (m_command.compare(_SELECT_PT) == 0)
+    {
+        m_commandVarMap.insert(_CENTER_PT, point);
+        run();
+    }
 }
 
 void MainWindow::goToPrev(const QPoint &point)
 {
+    Q_UNUSED(point);
+
     if(m_commandStep == _STEP_1)
     {
         m_commandStep = _STEP_0;
@@ -134,6 +145,7 @@ void MainWindow::run()
             CShape *shape = new CRound(radius);
 
             feature->setShape(shape);
+            feature->calcArea();
             m_activeLayer->appendFeature(feature);
         }
         else if (m_commandShape.compare(_RECTANGLE) == 0)
@@ -143,6 +155,7 @@ void MainWindow::run()
             CShape *shape = new CRectangle(width, height);
 
             feature->setShape(shape);
+            feature->calcArea();
             m_activeLayer->appendFeature(feature);
         }
     }
@@ -159,6 +172,7 @@ void MainWindow::run()
             CShape *shape = new CRound(radius);
 
             feature->setShape(shape);
+            feature->calcArea();
             m_activeLayer->appendFeature(feature);
         }
         else if (m_commandShape.compare(_RECTANGLE) == 0)
@@ -168,7 +182,27 @@ void MainWindow::run()
             CShape *shape = new CRectangle(width, height);
 
             feature->setShape(shape);
+            feature->calcArea();
             m_activeLayer->appendFeature(feature);
+        }
+    }
+    else if (m_command.compare(_SELECT_PT) == 0)
+    {
+        QPoint point = m_commandVarMap.value(_CENTER_PT).toPoint();
+
+        QList<CFeature *> featureList = m_activeLayer->featureList();
+        for (auto iterFeature = featureList.cbegin(); iterFeature != featureList.cend(); ++iterFeature)
+        {
+            CFeature *feature = *iterFeature;
+            if (!feature)
+                continue;
+
+            QPainterPath areaPath = feature->getAreaPath();
+            if (areaPath.contains(QPointF(point)))
+            {
+                m_selectedFeatures.append(feature);
+                break;
+            }
         }
     }
 }
@@ -290,6 +324,27 @@ void MainWindow::setActiveLayer(CLayer *activeLayer)
     emit changedActiveLayerSignal(activeLayer);
 }
 
+void MainWindow::resetJob()
+{
+    // model.
+    CLayerListModel *layerListModel = getLayerListModel();
+    if (layerListModel)
+        layerListModel->setLayerList(QList<CLayer *>());
+
+    CFeatureListModel *featureListModel = getFeatureListModel();
+    if (featureListModel)
+    {
+        featureListModel->setActiveLayer(NULL);
+        featureListModel->setFeatureList(QList<CFeature *>());
+    }
+
+    m_job->deleteLater();
+    m_job = new CJob();
+    m_activeLayer = NULL;
+    m_view->setMainWindow(this);
+    m_view->repaint();
+}
+
 void MainWindow::on_actionAdd_Layer_triggered()
 {
     CAddLayerDialog *addLayerDlg = new CAddLayerDialog(this);
@@ -324,6 +379,18 @@ CJob *MainWindow::job() const
 void MainWindow::setJob(CJob *job)
 {
     m_job = job;
+}
+
+CLayerListModel *MainWindow::getLayerListModel()
+{
+    CLayerListModel *layerListModel = qobject_cast<CLayerListModel *>(ui->layer_list_view->model());
+    return layerListModel;
+}
+
+CFeatureListModel *MainWindow::getFeatureListModel()
+{
+    CFeatureListModel *featureListModel = qobject_cast<CFeatureListModel *>(ui->feature_list_view->model());
+    return featureListModel;
 }
 
 QString MainWindow::commandShape() const
@@ -369,4 +436,51 @@ void MainWindow::setCommandStep(const int &commandStep)
 void MainWindow::on_actionSave_File_triggered()
 {
     saveFile();
+}
+
+void MainWindow::on_actionOpen_File_triggered()
+{
+    // 현재 내용을 저장 할 지?
+    if (m_activeLayer)
+    {
+        int result = QMessageBox::warning(this, tr("Save"), "Do you want to save the current content?", QMessageBox::Ok | QMessageBox::No | QMessageBox::Cancel);
+
+        if (result == QMessageBox::Cancel)      return;
+        else if (result == QMessageBox::Ok)     saveFile();
+    }
+
+    // 현재 job 리셋.
+    resetJob();
+
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open"), QDir::currentPath(), tr("Documents (*.xml)"));
+    QXmlStreamReader xmlReader;
+    QFile file(filename);
+
+    if (!file.open(QFile::ReadOnly))
+        return;
+
+    xmlReader.setDevice(&file);
+
+    // Read File.
+    COpenXMLFile::openJob(&xmlReader, m_job);
+
+    m_view->repaint();
+
+    emit changedJob(m_job);
+}
+
+void MainWindow::on_actionPoint_Select_triggered()
+{
+    m_command = _SELECT_PT;
+    ui->currentCommand->setText("Command : " + m_command);
+}
+
+QList<CFeature *> MainWindow::getSelectedFeatures() const
+{
+    return m_selectedFeatures;
+}
+
+void MainWindow::setSelectedFeatures(const QList<CFeature *> &selectedFeatures)
+{
+    m_selectedFeatures = selectedFeatures;
 }
