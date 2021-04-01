@@ -57,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Feature Model.
     CFeatureListModel *featureListModel = new CFeatureListModel(this);
     ui->feature_list_view->setModel(featureListModel);
+    ui->feature_list_view->setMinimumWidth(310);
     ui->feature_list_view->resizeColumnsToContents();
     ui->feature_list_view->horizontalHeader()->setStretchLastSection(true);
 
@@ -109,6 +110,25 @@ void MainWindow::goToNext(const QPoint &point)
     {
         m_commandVarMap.insert(_CENTER_PT, point);
         run();
+    }
+    else if (m_command.compare(_SELECT_RECT) == 0)
+    {
+        switch (m_commandStep)
+        {
+        case 0:
+        {
+            m_commandVarMap.insert(_START_PT, point);
+            m_commandStep++;
+            updateCurrentStepUI();
+        } break;
+        case 1:
+        {
+            m_commandVarMap.insert(_END_PT, point);
+            initCommandStep();
+            updateCurrentStepUI();
+            run();
+        } break;
+        }
     }
 }
 
@@ -192,6 +212,7 @@ void MainWindow::run()
     {
         QPoint point = m_commandVarMap.value(_CENTER_PT).toPoint();
 
+        int selectCnt = 0;
         QList<CFeature *> featureList = m_activeLayer->featureList();
         for (auto iterFeature = featureList.cbegin(); iterFeature != featureList.cend(); ++iterFeature)
         {
@@ -202,10 +223,39 @@ void MainWindow::run()
             QPainterPath areaPath = feature->getAreaPath();
             if (areaPath.contains(QPointF(point)))
             {
+                selectCnt++;
                 m_selectedFeatures.append(feature);
                 break;
             }
         }
+
+        if (selectCnt == 0)
+            m_selectedFeatures.clear();
+    }
+    else if (m_command.compare(_SELECT_RECT) == 0)
+    {
+        QPoint start = m_commandVarMap.value(_START_PT).toPoint();
+        QPoint end = m_commandVarMap.value(_END_PT).toPoint();
+
+        int selectCnt = 0;
+        QRect selectArea(start, end);
+        QList<CFeature *> featureList = m_activeLayer->featureList();
+        for (auto iterFeature = featureList.cbegin(); iterFeature != featureList.cend(); ++iterFeature)
+        {
+            CFeature *feature = *iterFeature;
+            if (!feature)
+                continue;
+
+            QPainterPath areaPath = feature->getAreaPath();
+            if (!areaPath.intersects(selectArea) && !areaPath.contains(selectArea))
+                continue;
+
+            m_selectedFeatures.append(feature);
+            selectCnt++;
+        }
+
+        if (selectCnt == 0)
+            m_selectedFeatures.clear();
     }
 }
 
@@ -239,6 +289,7 @@ void MainWindow::addFeatureCommand(CLayer *layer, CFeature *feature)
 {
     QUndoCommand *addCommand = new CAddFeatureCommand(layer, feature);
     m_undoStack.push(addCommand);
+    ui->feature_list_view->resizeColumnsToContents();
 }
 
 void MainWindow::deleteFeatureCommand(CLayer *layer, CFeature *feature)
@@ -525,6 +576,7 @@ void MainWindow::on_actionDelete_Feature_triggered()
             break;
 
         m_activeLayer->removeFeature(feature);
+        deleteFeatureCommand(m_activeLayer, feature);
     }
 
     // update.
@@ -545,4 +597,10 @@ void MainWindow::on_actionRedo_triggered()
 
     // update.
     updatedFeatures();
+}
+
+void MainWindow::on_actionRectangle_Select_triggered()
+{
+    m_command = _SELECT_RECT;
+    ui->currentCommand->setText("Command : " + m_command);
 }

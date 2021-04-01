@@ -32,6 +32,7 @@ enum SHAPE_TYPE
 #define _ADD_PAD     "Add Pad"
 #define _ADD_LINE    "Add Line"
 #define _SELECT_PT   "Select Point"
+#define _SELECT_RECT "Select Rectangle"
 
 #define _NO_COMMAND  "No Command"
 

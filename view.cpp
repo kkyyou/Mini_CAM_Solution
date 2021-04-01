@@ -301,8 +301,10 @@ void CView::drawLineRound(const QPoint &startPoint, const QPoint &endPoint, cons
     painter->drawLine(startPoint, endPoint);
 }
 
-void CView::drawLinePreview(const QMap<QString, QVariant> &commandValueMap, QPainter *painter, const QColor &penColor)
+void CView::drawLinePreview(QPainter *painter, const QColor &penColor)
 {
+    QMap<QString, QVariant> commandValueMap = m_mainWindow->commandVarMap();
+
     QPoint start = commandValueMap.value(_START_PT).toPoint();
     QString shapeStr = m_mainWindow->commandShape();
 
@@ -317,6 +319,22 @@ void CView::drawLinePreview(const QMap<QString, QVariant> &commandValueMap, QPai
         long width = commandValueMap.value(_WIDTH).toLongLong();
         drawLineRect(start, m_pos, width, painter, penColor);
     }
+}
+
+void CView::drawSelectRectPreview(QPainter *painter, const QColor &penColor)
+{
+    QPen pen;
+
+    pen.setColor(penColor);
+    pen.setCapStyle(Qt::SquareCap);
+    pen.setStyle(Qt::SolidLine);
+    pen.setWidth(0);
+    painter->setPen(pen);
+
+    QMap<QString, QVariant> commandValueMap = m_mainWindow->commandVarMap();
+    QPoint start = commandValueMap.value(_START_PT).toPoint();
+    QRect rect(start, m_pos);
+    painter->drawRect(rect);
 }
 
 MainWindow *CView::getMainWindow() const
@@ -360,13 +378,19 @@ void CView::paintEvent(QPaintEvent *event)
         drawLayer(viewLayer, &painterPixmap, viewLayer->featureColor());
     }
 
-    // 현재 커맨드 스텝에 따른 Feature 그리기.
     int curCommandStep = m_mainWindow->commandStep();
     QString curCommand = m_mainWindow->command();
+
+    // Line Preview.
     if (curCommand.compare(_ADD_LINE) == 0 && curCommandStep == _STEP_1)
     {
-        QMap<QString, QVariant> commandValueMap = m_mainWindow->commandVarMap();
-        drawLinePreview(commandValueMap, &painterPixmap, Qt::red);
+        drawLinePreview(&painterPixmap, Qt::red);
+    }
+
+    // Select Rectangle Preview.
+    if (curCommand.compare(_SELECT_RECT) == 0 && curCommandStep == _STEP_1)
+    {
+        drawSelectRectPreview(&painterPixmap, Qt::white);
     }
 
     // Select.

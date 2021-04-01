@@ -42,8 +42,8 @@ public:
     void drawLineRect(const QPoint &startPoint , const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor);
     void drawLineRound(const QPoint &startPoint , const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor);
 
-    void drawLinePreview(const QMap<QString, QVariant> &commandValueMap, QPainter *painter, const QColor &penColor);
-
+    void drawLinePreview(QPainter *painter, const QColor &penColor);
+    void drawSelectRectPreview(QPainter *painter, const QColor &penColor);
 signals:
     void updateCurMousePositionSignal(long, long);
 

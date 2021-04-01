@@ -99,6 +99,8 @@ private slots:
 
     void on_actionRedo_triggered();
 
+    void on_actionRectangle_Select_triggered();
+
 private:
     CJob   *m_job;
     CView  *m_view;

@@ -125,6 +125,12 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
+   <property name="minimumSize">
+    <size>
+     <width>100</width>
+     <height>125</height>
+    </size>
+   </property>
    <property name="windowTitle">
     <string>Feature Bar</string>
    </property>
