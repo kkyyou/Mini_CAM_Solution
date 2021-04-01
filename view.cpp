@@ -110,6 +110,16 @@ void CView::drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor)
         case _FEATURE_LINE: drawLine(feature, painter, penColor);   break;
         default:                                                   break;
         }
+
+
+        QPen pen;
+        pen.setStyle(Qt::DashDotLine);
+        pen.setWidth(100000);
+        pen.setBrush(Qt::yellow);
+        pen.setCapStyle(Qt::RoundCap);
+        pen.setJoinStyle(Qt::RoundJoin);
+        painter->setPen(pen);
+        painter->drawPath(feature->getAreaPath());
     }
 }
 
@@ -183,7 +193,6 @@ void CView::drawPad(CFeature *feature, QPainter *painter, const QColor &penColor
         return;
 
     SHAPE_TYPE shapeType = shape->type();
-
     QPoint center = pad->getCenterPoint();
     if (shapeType == _SHAPE_ROUND)
     {
@@ -224,13 +233,6 @@ void CView::drawLine(CFeature *feature, QPainter *painter, const QColor &penColo
         long width = shape->getWidth();
         drawLineRect(start, end, width, painter, penColor);
     }
-
-    QPen pen;
-    pen.setColor(Qt::white);
-    pen.setWidth(0);
-    pen.setStyle(Qt::SolidLine);
-    painter->setPen(pen);
-    painter->drawPath(feature->getAreaPath());
 }
 
 void CView::drawPadRound(const QPoint &centerPoint, const long &radius, QPainter *painter, const QColor &penColor)
@@ -372,6 +374,8 @@ void CView::paintEvent(QPaintEvent *event)
         case _FEATURE_LINE: drawLine(feature, &painterPixmap, Qt::white);  break;
         default:                                                           break;
         }
+
+
     }
 
     painterPixmap.end();

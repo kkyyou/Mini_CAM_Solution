@@ -19,6 +19,9 @@ public:
     virtual QString getSizeInfo();
     virtual void calcArea();
 
+    double getRadian(QPoint start, QPoint end);
+    QPair<QPoint, QPoint> getOthogonalLeftRightPoint(QPoint anchor, double radian, long distance);
+
 private:
     QPoint m_start;
     QPoint m_end;

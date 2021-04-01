@@ -64,45 +64,113 @@ void CLine::calcArea()
     if (shapeType == _SHAPE_ROUND)
     {
         long radius = shape()->getRadius() / 2;
-        double y = (double)m_end.y() - (double)m_start.y();
-        double x = (double)m_end.x() - (double)m_start.x();
-        double radian = qAtan2(y, x);
 
-        QPoint startLeft;
-        double slx = (double)m_start.x() + ((double)radius * -qSin(radian));
-        double sly = (double)m_start.y() + ((double)radius * qCos(radian));
-        startLeft.setX(slx + ((slx) < 0 ? -0.5 : 0.5));
-        startLeft.setY(sly + ((sly) < 0 ? -0.5 : 0.5));
+        // 기울기 구하기.
+        double radian = getRadian(m_start, m_end);
+        double degree = radian / _PI * 180.0;
+        double othogonalRightDegree = degree - 90.0;
 
-        QPoint startRight;
-        double srx = (double)m_start.x() + ((double)radius * qSin(radian));
-        double sry = (double)m_start.y() + ((double)radius * -qCos(radian));
-        startRight.setX(srx + ((srx) < 0 ? -0.5 : 0.5));
-        startRight.setY(sry + ((sry) < 0 ? -0.5 : 0.5));
+        // 기울기에 직교하며 Start , End 점에서 반지름 만큼 떨어진 두 점 구하기.
+        QPair<QPoint, QPoint> startLeftRight = getOthogonalLeftRightPoint(m_start, radian, radius);
+        QPair<QPoint, QPoint> endLeftRight = getOthogonalLeftRightPoint(m_end, radian, radius);
 
-        QPoint endLeft;
-        double elx = (double)m_end.x() + ((double)radius * -qSin(radian));
-        double ely = (double)m_end.y() + ((double)radius * qCos(radian));
-        endLeft.setX(elx + ((elx) < 0 ? -0.5 : 0.5));
-        endLeft.setY(ely + ((ely) < 0 ? -0.5 : 0.5));
+        QPoint startLeft = startLeftRight.first;
+        QPoint startRight = startLeftRight.second;
 
-        QPoint endRight;
-        double erx = (double)m_end.x() + ((double)radius * qSin(radian));
-        double ery = (double)m_end.y() + ((double)radius * -qCos(radian));
-        endRight.setX(erx + ((erx) < 0 ? -0.5 : 0.5));
-        endRight.setY(ery + ((ery) < 0 ? -0.5 : 0.5));
+        QPoint endLeft = endLeftRight.first;
+        QPoint endRight = endLeftRight.second;
 
+        //! 원을 내접하고있는 사각형(Rect) 구하기.
+        // End Point쪽 원을 내접하는 사각형 구하기.
+        QPoint endRectLeftTop(m_end.x() - radius, m_end.y() + radius);
+        QRect tmpRect1(endRectLeftTop.x(), endRectLeftTop.y(), radius * 2, -radius * 2);
+
+        // Start Point 쪽 원을 내접하는 사각형 구하기.
+        QPoint startRectLeftTop(m_start.x() - radius, m_start.y() + radius);
+        QRect tmpRect2(startRectLeftTop.x(), startRectLeftTop.y(), radius * 2, -radius * 2);
+
+        // Path 그리기.
         path.moveTo(startLeft);
         path.lineTo(endLeft);
         path.moveTo(endRight);
+        path.arcTo(tmpRect1, othogonalRightDegree, 180);   // 현재 라인의 직교하는 각도를 Start로 180도 만큼 호 그리기.
+        path.moveTo(endRight);
         path.lineTo(startRight);
+        path.arcTo(tmpRect2, othogonalRightDegree, -180);  // 현재 라인의 직교하는 각도를 Start로 -180도 만큼 호 그리기.
     }
     else if (shapeType == _SHAPE_RECT)
     {
-        long width = shape()->getWidth();
-        long height = shape()->getHeight();
+        long widthHalf = shape()->getWidth() / 2;
+
+        // 기울기 구하기.
+        double radian = getRadian(m_start, m_end);
+
+        // 기울기에 직교하며 Start , End 점에서 Width Half 만큼 떨어진 두 점 구하기.
+        QPair<QPoint, QPoint> startLeftRight = getOthogonalLeftRightPoint(m_start, radian, widthHalf);
+        QPair<QPoint, QPoint> endLeftRight = getOthogonalLeftRightPoint(m_end, radian, widthHalf);
+
+        // 외곽 사각형 아웃라인을 잡기위해 위에서 구한 점들을 widthHalf만큼 라인선상의 점으로 이동한다.
+        QPoint startLeft = startLeftRight.first;
+        startLeft.setX(startLeft.x() + (-widthHalf * qCos(radian)));
+        startLeft.setY(startLeft.y() + (-widthHalf * qSin(radian)));
+
+        QPoint startRight = startLeftRight.second;
+        startRight.setX(startRight.x() + (-widthHalf * qCos(radian)));
+        startRight.setY(startRight.y() + (-widthHalf * qSin(radian)));
+
+        QPoint endLeft = endLeftRight.first;
+        endLeft.setX(endLeft.x() + (widthHalf * qCos(radian)));
+        endLeft.setY(endLeft.y() + (widthHalf * qSin(radian)));
+
+        QPoint endRight = endLeftRight.second;
+        endRight.setX(endRight.x() + (widthHalf * qCos(radian)));
+        endRight.setY(endRight.y() + (widthHalf * qSin(radian)));
+
+        // Path 그리기.
+        path.moveTo(startLeft);
+        path.lineTo(endLeft);
+        path.lineTo(endRight);
+        path.lineTo(startRight);
+        path.lineTo(startLeft);
     }
 
     m_areaPath = path;
+}
+
+double CLine::getRadian(QPoint start, QPoint end)
+{
+    double y = (double)end.y() - (double)start.y();
+    double x = (double)end.x() - (double)start.x();
+
+    double radian = qAtan2(y, x);
+
+    return radian;
+}
+
+QPair<QPoint, QPoint> CLine::getOthogonalLeftRightPoint(QPoint anchor, double radian, long distance)
+{
+    QPoint anchorLeft, anchorRight;
+
+    double sinValue = qSin(radian);
+    double cosValue = qCos(radian);
+
+    // cos(90+a) = -sin(a)
+    // cos(270+a) = sin(a)
+    // sin(90+a) = cos(a)
+    // sin(270+a) = -cos(a)
+
+    // LEFT.
+    double lx = (double)anchor.x() + (double)distance * -sinValue;
+    double ly = (double)anchor.y() + (double)distance * cosValue;
+    anchorLeft.setX(lx + ((lx) < 0 ? -0.5 : 0.5));
+    anchorLeft.setY(ly + ((ly) < 0 ? -0.5 : 0.5));
+
+    // RIGHT.
+    double rx = (double)anchor.x() + (double)distance * sinValue;
+    double ry = (double)anchor.y() + (double)distance * -cosValue;
+    anchorRight.setX(rx + ((rx) < 0 ? -0.5 : 0.5));
+    anchorRight.setY(ry + ((ry) < 0 ? -0.5 : 0.5));
+
+    return qMakePair(anchorLeft, anchorRight);
 }
 
