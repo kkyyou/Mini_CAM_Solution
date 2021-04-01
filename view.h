@@ -29,6 +29,8 @@ public:
     // Zoom.
     void zoomIn();
     void zoomOut();
+    void zoomInCurrentView();
+    void zoomOutCurrentView();
 
     // Panning.
     void panning();
@@ -42,8 +44,10 @@ public:
     void drawLineRect(const QPoint &startPoint , const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor);
     void drawLineRound(const QPoint &startPoint , const QPoint &endPoint, const long &penWidth, QPainter *painter, const QColor &penColor);
 
+    // Preview.
     void drawLinePreview(QPainter *painter, const QColor &penColor);
     void drawSelectRectPreview(QPainter *painter, const QColor &penColor);
+    void drawFeatureAreaPreview(QPainter *painter, const QColor &penColor);
 signals:
     void updateCurMousePositionSignal(long, long);
 

@@ -1,29 +1,29 @@
 #include "round.h"
 
-CRound::CRound(const long &radius) :
+CRound::CRound(const long &diameter) :
     CShape(_SHAPE_ROUND),
-    m_radius(radius)
+    m_diameter(diameter)
 {
 
 }
 
 long CRound::getRadius()
 {
-    return m_radius;
+    return m_diameter / 2;
 }
 
 long CRound::getWidth()
 {
-    return m_radius * 2;
+    return m_diameter;
 }
 
 long CRound::getHeight()
 {
-    return m_radius * 2;
+    return m_diameter;
 }
 
 QString CRound::getSizeInfo()
 {
-    QString radius = QString::number(m_radius / _MILLION);
-    return QString("Radius = " + radius);
+    QString diameter = QString::number(m_diameter / _MILLION);
+    return QString("Diameter = " + diameter);
 }

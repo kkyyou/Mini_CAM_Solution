@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setWindowTitle("Mini CAM Solution");
+
     m_job = new CJob();
     m_view = new CView(this);
 
@@ -163,8 +165,8 @@ void MainWindow::run()
 
         if (m_commandShape.compare(_ROUND) == 0)
         {
-            qlonglong radius = m_commandVarMap.value(_RADIUS).toLongLong();
-            CShape *shape = new CRound(radius);
+            qlonglong diameter = m_commandVarMap.value(_DIAMETER).toLongLong();
+            CShape *shape = new CRound(diameter);
 
             feature->setShape(shape);
             feature->calcArea();
@@ -190,8 +192,8 @@ void MainWindow::run()
 
         if (m_commandShape.compare(_ROUND) == 0)
         {
-            qlonglong radius = m_commandVarMap.value(_RADIUS).toLongLong();
-            CShape *shape = new CRound(radius);
+            qlonglong diameter = m_commandVarMap.value(_DIAMETER).toLongLong();
+            CShape *shape = new CRound(diameter);
 
             feature->setShape(shape);
             feature->calcArea();
@@ -381,6 +383,7 @@ void MainWindow::on_actionAdd_Pad_triggered()
 
     CAddPadDialog *addPadDlg = new CAddPadDialog(this);
     addPadDlg->setWindowTitle("Add Pad");
+    addPadDlg->resize(300, 100);
     addPadDlg->show();
 
     // Connect.
@@ -430,6 +433,7 @@ void MainWindow::resetJob()
 void MainWindow::on_actionAdd_Layer_triggered()
 {
     CAddLayerDialog *addLayerDlg = new CAddLayerDialog(this);
+    addLayerDlg->resize(300, 100);
     addLayerDlg->show();
 
     // Add Layer 시그널/슬롯 연결.
@@ -446,6 +450,7 @@ void MainWindow::on_actionAdd_Line_triggered()
 
     CAddLineDialog *addLineDlg = new CAddLineDialog(this);
     addLineDlg->setWindowTitle("Add Line");
+    addLineDlg->resize(300, 100);
     addLineDlg->show();
 
     // Connect.
@@ -569,6 +574,10 @@ void MainWindow::setSelectedFeatures(const QList<CFeature *> &selectedFeatures)
 
 void MainWindow::on_actionDelete_Feature_triggered()
 {
+    int result = QMessageBox::warning(this, tr("Delete Feature"), "Do you want to delete feature(s)?", QMessageBox::Ok | QMessageBox::No);
+    if (result == QMessageBox::No)
+        return;
+
     while (!m_selectedFeatures.isEmpty())
     {
         CFeature *feature = m_selectedFeatures.takeFirst();
@@ -603,4 +612,19 @@ void MainWindow::on_actionRectangle_Select_triggered()
 {
     m_command = _SELECT_RECT;
     ui->currentCommand->setText("Command : " + m_command);
+}
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    m_view->zoomInCurrentView();
+}
+
+void MainWindow::on_actionZoom_Out_triggered()
+{
+    m_view->zoomOutCurrentView();
+}
+
+void MainWindow::on_actionNew_File_triggered()
+{
+    resetJob();
 }

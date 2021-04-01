@@ -101,6 +101,12 @@ private slots:
 
     void on_actionRectangle_Select_triggered();
 
+    void on_actionZoom_In_triggered();
+
+    void on_actionZoom_Out_triggered();
+
+    void on_actionNew_File_triggered();
+
 private:
     CJob   *m_job;
     CView  *m_view;

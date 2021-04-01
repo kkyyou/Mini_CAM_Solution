@@ -63,7 +63,7 @@ void CLine::calcArea()
     SHAPE_TYPE shapeType = shape()->type();
     if (shapeType == _SHAPE_ROUND)
     {
-        long radius = shape()->getRadius() / 2;
+        long radius = shape()->getRadius();
 
         // 기울기 구하기.
         double radian = getRadian(m_start, m_end);

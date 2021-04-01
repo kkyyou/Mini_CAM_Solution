@@ -23,6 +23,8 @@ signals:
 private slots:
     void on_setting_btn_clicked();
 
+    void on_close_btn_clicked();
+
 private:
     Ui::CAddLineDialog *ui;
 };

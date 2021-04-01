@@ -108,7 +108,7 @@ void CSaveXMLFile::saveFeaturePadRound(QXmlStreamWriter *writer, CFeature *featu
     writer->writeAttribute(_SHAPE_TYPE, _ROUND);
     writer->writeAttribute(_CENTER_X, QString::number(center.x()));
     writer->writeAttribute(_CENTER_Y, QString::number(center.y()));
-    writer->writeAttribute(_RADIUS, QString::number(feature->shape()->getRadius()));
+    writer->writeAttribute(_DIAMETER, QString::number(feature->shape()->getWidth()));
 }
 
 void CSaveXMLFile::saveFeaturePadRect(QXmlStreamWriter *writer, CFeature *feature)
@@ -134,7 +134,7 @@ void CSaveXMLFile::saveFeatureLineRound(QXmlStreamWriter *writer, CFeature *feat
     writer->writeAttribute(_START_Y, QString::number(start.y()));
     writer->writeAttribute(_END_X, QString::number(end.x()));
     writer->writeAttribute(_END_Y, QString::number(end.y()));
-    writer->writeAttribute(_RADIUS, QString::number(feature->shape()->getRadius()));
+    writer->writeAttribute(_DIAMETER, QString::number(feature->shape()->getWidth()));
 }
 
 void CSaveXMLFile::saveFeatureLineRect(QXmlStreamWriter *writer, CFeature *feature)

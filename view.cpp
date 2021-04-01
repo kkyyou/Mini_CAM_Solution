@@ -110,16 +110,6 @@ void CView::drawLayer(CLayer *layer, QPainter *painter, const QColor &penColor)
         case _FEATURE_LINE: drawLine(feature, painter, penColor);   break;
         default:                                                   break;
         }
-
-
-        QPen pen;
-        pen.setStyle(Qt::DashDotLine);
-        pen.setWidth(100000);
-        pen.setBrush(Qt::yellow);
-        pen.setCapStyle(Qt::RoundCap);
-        pen.setJoinStyle(Qt::RoundJoin);
-        painter->setPen(pen);
-        painter->drawPath(feature->getAreaPath());
     }
 }
 
@@ -179,6 +169,18 @@ void CView::zoomOut()
     repaint();
 }
 
+void CView::zoomInCurrentView()
+{
+    m_viewArea.setRect(m_viewArea.left() * m_zoomInFactor , m_viewArea.top() * m_zoomInFactor ,m_viewArea.width() * m_zoomInFactor,m_viewArea.height() * m_zoomInFactor);
+    repaint();
+}
+
+void CView::zoomOutCurrentView()
+{
+    m_viewArea.setRect(m_viewArea.left() * m_zoomOutFactor, m_viewArea.top() * m_zoomOutFactor,m_viewArea.width() * m_zoomOutFactor,m_viewArea.height() * m_zoomOutFactor);
+    repaint();
+}
+
 void CView::panning()
 {
     long offsetX = m_lastPos.x() - m_pos.x();
@@ -235,8 +237,8 @@ void CView::drawLine(CFeature *feature, QPainter *painter, const QColor &penColo
     SHAPE_TYPE shapeType = shape->type();
     if (shapeType == _SHAPE_ROUND)
     {
-        long radius = shape->getRadius();
-        drawLineRound(start, end, radius, painter, penColor);
+        long diameter = shape->getWidth();
+        drawLineRound(start, end, diameter, painter, penColor);
     }
     else if (shapeType == _SHAPE_RECT)
     {
@@ -311,8 +313,8 @@ void CView::drawLinePreview(QPainter *painter, const QColor &penColor)
     // 라인의 스타트 점을 찍었을때 현재 마우스 위치로 프리뷰를 보여준다.
     if (shapeStr.compare(_ROUND) == 0)
     {
-        long radius = commandValueMap.value(_RADIUS).toLongLong();
-        drawLineRound(start, m_pos, radius, painter, penColor);
+        long diameter = commandValueMap.value(_DIAMETER).toLongLong();
+        drawLineRound(start, m_pos, diameter, painter, penColor);
     }
     else if (shapeStr.compare(_RECTANGLE) == 0)
     {
@@ -329,12 +331,37 @@ void CView::drawSelectRectPreview(QPainter *painter, const QColor &penColor)
     pen.setCapStyle(Qt::SquareCap);
     pen.setStyle(Qt::SolidLine);
     pen.setWidth(0);
+    painter->setBrush(Qt::NoBrush);
     painter->setPen(pen);
 
     QMap<QString, QVariant> commandValueMap = m_mainWindow->commandVarMap();
     QPoint start = commandValueMap.value(_START_PT).toPoint();
     QRect rect(start, m_pos);
     painter->drawRect(rect);
+}
+
+void CView::drawFeatureAreaPreview(QPainter *painter, const QColor &penColor)
+{
+    QList<CFeature *> features = m_mainWindow->activeLayer()->featureList();
+    for (auto iterF = features.cbegin(); iterF != features.cend(); ++iterF)
+    {
+        CFeature *feature = *iterF;
+        if (!feature)
+            continue;
+
+        QPainterPath areaPath = feature->getAreaPath();
+        if (areaPath.contains(m_pos))
+        {
+            QPen pen;
+            pen.setStyle(Qt::DashDotLine);
+            pen.setWidth(50000);
+            pen.setBrush(penColor);
+            pen.setCapStyle(Qt::RoundCap);
+            pen.setJoinStyle(Qt::RoundJoin);
+            painter->setPen(pen);
+            painter->drawPath(areaPath);
+        }
+    }
 }
 
 MainWindow *CView::getMainWindow() const
@@ -393,6 +420,12 @@ void CView::paintEvent(QPaintEvent *event)
         drawSelectRectPreview(&painterPixmap, Qt::white);
     }
 
+    // 마우스 도형에 갖다대었을때 영역 Preview.
+    if (curCommand.compare(_SELECT_PT) == 0)
+    {
+        drawFeatureAreaPreview(&painterPixmap, Qt::yellow);
+    }
+
     // Select.
     QList<CFeature *> selectFeatures = m_mainWindow->getSelectedFeatures();
     for (auto iterSelect = selectFeatures.cbegin(); iterSelect != selectFeatures.cend(); ++iterSelect)
@@ -408,8 +441,6 @@ void CView::paintEvent(QPaintEvent *event)
         case _FEATURE_LINE: drawLine(feature, &painterPixmap, Qt::white);  break;
         default:                                                           break;
         }
-
-
     }
 
     painterPixmap.end();

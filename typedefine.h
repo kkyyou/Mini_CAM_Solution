@@ -22,6 +22,7 @@ enum SHAPE_TYPE
 #define _START_PT    "StartPt"
 #define _END_PT      "EndPt"
 #define _RADIUS      "Radius"
+#define _DIAMETER    "Diameter"
 #define _WIDTH       "Width"
 #define _HEIGHT      "Height"
 #define _STEP_0      0

@@ -28,7 +28,7 @@ void CAddLayerDialog::on_ok_btn_clicked()
     }
 
     // 레이어 이름 입력 안하면 메시지 띄우기.
-    QMessageBox::warning(this, "Layer Name Empty", "레이어 이름을 입력하세요.", QMessageBox::Yes);
+    QMessageBox::warning(this, "Layer Name Empty", "Insert Layer Name.", QMessageBox::Yes);
 }
 
 void CAddLayerDialog::on_close_btn_clicked()

@@ -18,8 +18,8 @@ void CAddPadDialog::on_setting_btn_clicked()
 {
     if (ui->round_radio_btn->isChecked())
     {
-        long long radius = ui->width_line_edit->text().toDouble() * _MILLION;
-        emit insertCommandValueSignal(_RADIUS, radius);
+        long long diameter = ui->width_line_edit->text().toDouble() * _MILLION;
+        emit insertCommandValueSignal(_DIAMETER, diameter);
         emit updateCurrentCommandSignal(_ADD_PAD, _ROUND);
     }
     else if (ui->rect_radio_btn->isChecked())
@@ -34,7 +34,7 @@ void CAddPadDialog::on_setting_btn_clicked()
 
 void CAddPadDialog::on_round_radio_btn_clicked()
 {
-    ui->width_lbl->setText("Radius : ");
+    ui->width_lbl->setText("Diameter : ");
 
     ui->height_lbl->setVisible(false);
     ui->height_line_edit->setVisible(false);

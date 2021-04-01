@@ -104,15 +104,16 @@ void COpenXMLFile::openFeaturePadRound(QXmlStreamReader *reader, CLayer *layer)
 {
     long centerX = reader->attributes().value(_CENTER_X).toLongLong();
     long centerY = reader->attributes().value(_CENTER_Y).toLongLong();
-    long radius = reader->attributes().value(_RADIUS).toLongLong();
+    long diameter = reader->attributes().value(_DIAMETER).toLongLong();
 
     QPoint center = QPoint(centerX, centerY);
 
     // NEW FEATURE.
     CFeature *newFeature = new CPad(center);
-    CShape *newShape = new CRound(radius);
+    CShape *newShape = new CRound(diameter);
 
     newFeature->setShape(newShape);
+    newFeature->calcArea();
 
     // APPEND FEATURE.
     layer->appendFeature(newFeature);
@@ -132,6 +133,7 @@ void COpenXMLFile::openFeaturePadRect(QXmlStreamReader *reader, CLayer *layer)
     CShape *newShape = new CRectangle(width, height);
 
     newFeature->setShape(newShape);
+    newFeature->calcArea();
 
     // APPEND FEATURE.
     layer->appendFeature(newFeature);
@@ -143,16 +145,17 @@ void COpenXMLFile::openFeatureLineRound(QXmlStreamReader *reader, CLayer *layer)
     long startY = reader->attributes().value(_START_Y).toLongLong();
     long endX = reader->attributes().value(_END_X).toLongLong();
     long endY = reader->attributes().value(_END_Y).toLongLong();
-    long radius = reader->attributes().value(_RADIUS).toLongLong();
+    long diameter = reader->attributes().value(_DIAMETER).toLongLong();
 
     QPoint start = QPoint(startX, startY);
     QPoint end = QPoint(endX, endY);
 
     // NEW FEATURE.
     CFeature *newFeature = new CLine(start, end);
-    CShape *newShape = new CRound(radius);
+    CShape *newShape = new CRound(diameter);
 
     newFeature->setShape(newShape);
+    newFeature->calcArea();
 
     // APPEND FEATURE.
     layer->appendFeature(newFeature);
@@ -175,6 +178,7 @@ void COpenXMLFile::openFeatureLineRect(QXmlStreamReader *reader, CLayer *layer)
     CShape *newShape = new CRectangle(width, height);
 
     newFeature->setShape(newShape);
+    newFeature->calcArea();
 
     // APPEND FEATURE.
     layer->appendFeature(newFeature);

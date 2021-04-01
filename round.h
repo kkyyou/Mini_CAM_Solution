@@ -6,7 +6,7 @@
 class CRound : public CShape
 {
 public:
-    CRound(const long &radius);
+    CRound(const long &diameter);
 
     virtual long getRadius();
     virtual long getWidth();
@@ -14,7 +14,7 @@ public:
     virtual QString getSizeInfo();
 
 private:
-    long m_radius;
+    long m_diameter;
 };
 
 #endif // CROUND_H
