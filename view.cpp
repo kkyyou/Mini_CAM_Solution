@@ -127,6 +127,8 @@ void CView::zoomIn()
 {
     long zoomInViewWidth = m_viewArea.width() * m_zoomInFactor;
     long zoomInViewHeight = m_viewArea.height() * m_zoomInFactor;
+    long zoomInViewWidthHalf = zoomInViewWidth / 2;
+    long zoomInViewHeightHalf = zoomInViewHeight / 2;
 
     long left   = m_viewArea.left();
     long right  = m_viewArea.right();
@@ -138,9 +140,12 @@ void CView::zoomIn()
 
     QPoint center(centerX, centerY);
 
-    QPoint topLeft = QPoint(m_pos.x() - zoomInViewWidth / 2, m_pos.y() - zoomInViewHeight / 2);
-    QPoint bottomRight = QPoint(m_pos.x() + zoomInViewWidth / 2, m_pos.y() + zoomInViewHeight / 2);
+    // 내 마우스를 중심으로 ZoomIn한 viewAreaNew 구하기.
+    QPoint topLeft = QPoint(m_pos.x() - zoomInViewWidthHalf, m_pos.y() - zoomInViewHeightHalf);
+    QPoint bottomRight = QPoint(m_pos.x() + zoomInViewWidthHalf, m_pos.y() + zoomInViewHeightHalf);
     QRect viewAreaNew = QRect(topLeft, bottomRight);
+
+    // 마우스 위치쪽으로 ZoomIn을 하기위해 현재 뷰의 Center와 마우스의 오프셋 만큼 이동.
     viewAreaNew.translate((center.x() - m_pos.x()) * m_zoomInFactor, (center.y() - m_pos.y()) * m_zoomInFactor);
     m_viewArea.setRect(viewAreaNew.left(), viewAreaNew.top(), viewAreaNew.width(), viewAreaNew.height());
     repaint();
@@ -150,6 +155,8 @@ void CView::zoomOut()
 {
     long zoomOutViewWidth = m_viewArea.width() * m_zoomOutFactor;
     long zoomOutViewHeight = m_viewArea.height() * m_zoomOutFactor;
+    long zoomOutViewWidthHalf = zoomOutViewWidth / 2;
+    long zoomOutViewHeightHalf = zoomOutViewHeight / 2;
 
     long left   = m_viewArea.left();
     long right  = m_viewArea.right();
@@ -161,9 +168,12 @@ void CView::zoomOut()
 
     QPoint center(centerX, centerY);
 
-    QPoint topLeft = QPoint(m_pos.x() - zoomOutViewWidth / 2, m_pos.y() - zoomOutViewHeight / 2);
-    QPoint bottomRight = QPoint(m_pos.x() + zoomOutViewWidth / 2, m_pos.y() + zoomOutViewHeight / 2);
+    // 내 마우스를 중심으로 ZoomOut한 viewAreaNew 구하기.
+    QPoint topLeft = QPoint(m_pos.x() - zoomOutViewWidthHalf, m_pos.y() - zoomOutViewHeightHalf);
+    QPoint bottomRight = QPoint(m_pos.x() + zoomOutViewWidthHalf, m_pos.y() + zoomOutViewHeightHalf);
     QRect viewAreaNew = QRect(topLeft, bottomRight);
+
+    // 마우스 위치쪽으로 Zoom Out을 하기위해 현재 뷰의 Center와 마우스의 오프셋 만큼 이동.
     viewAreaNew.translate((center.x() - m_pos.x()) * m_zoomOutFactor, (center.y() - m_pos.y()) * m_zoomOutFactor);
     m_viewArea.setRect(viewAreaNew.left(), viewAreaNew.top(), viewAreaNew.width(), viewAreaNew.height());
     repaint();

@@ -20,6 +20,8 @@
 #include "featurelistmodel.h"
 #include "savexmlfile.h"
 #include "openxmlfile.h"
+#include "addfeaturecommand.h"
+#include "deletefeaturecommand.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -146,7 +148,6 @@ void MainWindow::run()
 
             feature->setShape(shape);
             feature->calcArea();
-            m_activeLayer->appendFeature(feature);
         }
         else if (m_commandShape.compare(_RECTANGLE) == 0)
         {
@@ -156,8 +157,9 @@ void MainWindow::run()
 
             feature->setShape(shape);
             feature->calcArea();
-            m_activeLayer->appendFeature(feature);
         }
+
+        addFeatureCommand(m_activeLayer, feature);
     }
     else if (m_command.compare(_ADD_LINE) == 0)
     {
@@ -173,7 +175,6 @@ void MainWindow::run()
 
             feature->setShape(shape);
             feature->calcArea();
-            m_activeLayer->appendFeature(feature);
         }
         else if (m_commandShape.compare(_RECTANGLE) == 0)
         {
@@ -183,8 +184,9 @@ void MainWindow::run()
 
             feature->setShape(shape);
             feature->calcArea();
-            m_activeLayer->appendFeature(feature);
         }
+
+        addFeatureCommand(m_activeLayer, feature);
     }
     else if (m_command.compare(_SELECT_PT) == 0)
     {
@@ -231,6 +233,28 @@ void MainWindow::saveFile()
 
     // Write.
     CSaveXMLFile::saveJob(&xmlWriter, &file, m_job);
+}
+
+void MainWindow::addFeatureCommand(CLayer *layer, CFeature *feature)
+{
+    QUndoCommand *addCommand = new CAddFeatureCommand(layer, feature);
+    m_undoStack.push(addCommand);
+}
+
+void MainWindow::deleteFeatureCommand(CLayer *layer, CFeature *feature)
+{
+    QUndoCommand *deleteCommand = new CDeleteFeatureCommand(layer, feature);
+    m_undoStack.push(deleteCommand);
+}
+
+void MainWindow::updatedFeatures()
+{
+    // Feature Model Update.
+    CFeatureListModel *featureListModel = getFeatureListModel();
+    featureListModel->setActiveLayerSlot(m_activeLayer);
+
+    // View Repaint.
+    m_view->repaint();
 }
 
 void MainWindow::updateCurMousePositionSlot(long x, long y)
@@ -320,7 +344,14 @@ CLayer *MainWindow::activeLayer() const
 
 void MainWindow::setActiveLayer(CLayer *activeLayer)
 {
+    // Active 변경되면 Select 취소.
+    if (m_activeLayer != activeLayer)
+    {
+        m_selectedFeatures.clear();
+    }
+
     m_activeLayer = activeLayer;
+    m_view->repaint();
     emit changedActiveLayerSignal(activeLayer);
 }
 
@@ -483,4 +514,35 @@ QList<CFeature *> MainWindow::getSelectedFeatures() const
 void MainWindow::setSelectedFeatures(const QList<CFeature *> &selectedFeatures)
 {
     m_selectedFeatures = selectedFeatures;
+}
+
+void MainWindow::on_actionDelete_Feature_triggered()
+{
+    while (!m_selectedFeatures.isEmpty())
+    {
+        CFeature *feature = m_selectedFeatures.takeFirst();
+        if (!feature)
+            break;
+
+        m_activeLayer->removeFeature(feature);
+    }
+
+    // update.
+    updatedFeatures();
+}
+
+void MainWindow::on_actionUndo_triggered()
+{
+    m_undoStack.undo();
+
+    // update.
+    updatedFeatures();
+}
+
+void MainWindow::on_actionRedo_triggered()
+{
+    m_undoStack.redo();
+
+    // update.
+    updatedFeatures();
 }

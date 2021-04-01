@@ -14,6 +14,7 @@ public:
     ~CLayer();
 
     void appendFeature(CFeature *feature);
+    void removeFeature(CFeature *feature);
 
     QList<CFeature *> featureList() const;
     void setFeatureList(const QList<CFeature *> &featureList);

@@ -21,6 +21,11 @@ void CLayer::appendFeature(CFeature *feature)
     emit updatedFeatureListSignal(this);
 }
 
+void CLayer::removeFeature(CFeature *feature)
+{
+    m_featureList.removeOne(feature);
+}
+
 QList<CFeature *> CLayer::featureList() const
 {
     return m_featureList;

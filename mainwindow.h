@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QVariant>
 #include <QXmlStreamWriter>
+#include <QUndoStack>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -59,6 +60,12 @@ public:
     void saveFile();
     void saveLayerToXML(QXmlStreamWriter *xmlWriter, CLayer *layer);
 
+    // Command.
+    void addFeatureCommand(CLayer *layer, CFeature *feature);
+    void deleteFeatureCommand(CLayer *layer, CFeature *feature);
+
+    void updatedFeatures();
+
 signals:
     void changedActiveLayerSignal(CLayer *activeLayer);
     void changedJob(CJob *job);
@@ -86,6 +93,12 @@ private slots:
 
     void on_actionPoint_Select_triggered();
 
+    void on_actionDelete_Feature_triggered();
+
+    void on_actionUndo_triggered();
+
+    void on_actionRedo_triggered();
+
 private:
     CJob   *m_job;
     CView  *m_view;
@@ -97,6 +110,8 @@ private:
     QMap<QString, QVariant> m_commandVarMap;  // 각 커맨드에서 필요한 파라미터들을 저장하는 맵.
 
     QList<CFeature *> m_selectedFeatures;
+
+    QUndoStack m_undoStack;                   // Undo Redo 관리.
 private:
     Ui::MainWindow *ui;
 };

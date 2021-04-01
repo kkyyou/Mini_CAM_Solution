@@ -9,10 +9,12 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    addfeaturecommand.cpp \
     addlayerdialog.cpp \
     addlinedialog.cpp \
     addpaddialog.cpp \
     checkboxdelegate.cpp \
+    deletefeaturecommand.cpp \
     feature.cpp \
     featurelistmodel.cpp \
     job.cpp \
@@ -30,10 +32,12 @@ SOURCES += \
     view.cpp
 
 HEADERS += \
+    addfeaturecommand.h \
     addlayerdialog.h \
     addlinedialog.h \
     addpaddialog.h \
     checkboxdelegate.h \
+    deletefeaturecommand.h \
     feature.h \
     featurelistmodel.h \
     job.h \
