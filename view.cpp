@@ -411,7 +411,7 @@ void CView::paintEvent(QPaintEvent *event)
     // Line Preview.
     if (curCommand.compare(_ADD_LINE) == 0 && curCommandStep == _STEP_1)
     {
-        drawLinePreview(&painterPixmap, Qt::red);
+        drawLinePreview(&painterPixmap, m_mainWindow->activeLayer()->featureColor());
     }
 
     // Select Rectangle Preview.
